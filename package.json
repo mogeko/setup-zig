@@ -1,21 +1,25 @@
 {
-	"name": "setup-zig",
-	"version": "0.1.0",
-	"description": "A GitHub Action to set up Zig",
-	"main": "./dist/index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"keywords": [],
-	"author": "Zheng Junyi <zhengjunyi@live.com>",
-	"license": "MIT",
-	"devEngines": {
-		"packageManager": {
-			"name": "pnpm",
-			"version": "12.4.1",
-			"onFail": "download"
-		}
-	},
-	"packageManager": "pnpm@12.4.1",
-	"type": "module"
+  "name": "setup-zig",
+  "version": "0.1.0",
+  "description": "A GitHub Action to set up Zig",
+  "main": "./dist/index.js",
+  "scripts": {
+    "fmt": "biome format --write .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Zheng Junyi <zhengjunyi@live.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "2.5.13"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.4.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.4.1",
+  "type": "module"
 }
