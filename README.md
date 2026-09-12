@@ -5,7 +5,7 @@ Install the [Zig](https://ziglang.org/) toolchain on a GitHub Actions runner, an
 ## 用法
 
 ```yaml
-- uses: mogeko/setup-zig@v0.1.0
+- uses: mogeko/setup-zig@v1
   with:
     version: 0.16.0
 
