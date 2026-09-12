@@ -35,14 +35,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          path: action
+      - name: Move example project to workspace root
+        shell: bash
+        run: |
+          mv action/examples/hello/build.zig .
+          mv action/examples/hello/build.zig.zon .
+          mv action/examples/hello/src .
       - name: Setup Zig
-        id: zig
-        uses: ./
+        uses: ./action
         with:
           cache: all
-      - name: Build example
-        working-directory: examples/hello
-        run: zig build
-      - name: Run example
-        working-directory: examples/hello
-        run: zig build run
+      - run: zig build
+      - run: zig build run

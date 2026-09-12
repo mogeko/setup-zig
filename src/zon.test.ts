@@ -19,33 +19,35 @@ describe("extractMinimumZigVersion", () => {
 });
 
 describe("readMinimumZigVersion", () => {
-  it("finds build.zig.zon in a subdirectory", async () => {
+  it("finds build.zig.zon in a parent directory", async () => {
     const tmp = await mkdtemp(path.join(os.tmpdir(), "setup-zig-test-"));
     try {
-      await mkdir(path.join(tmp, "examples", "hello"), { recursive: true });
       await writeFile(
-        path.join(tmp, "examples", "hello", "build.zig.zon"),
+        path.join(tmp, "build.zig.zon"),
         '.{ .minimum_zig_version = "0.16.0" }',
       );
-      expect(await readMinimumZigVersion(tmp)).toBe("0.16.0");
+      const sub = path.join(tmp, "examples", "hello");
+      await mkdir(sub, { recursive: true });
+      expect(await readMinimumZigVersion(sub)).toBe("0.16.0");
     } finally {
       await rm(tmp, { recursive: true, force: true });
     }
   });
 
-  it("prefers the root build.zig.zon over subdirectories", async () => {
+  it("prefers the nearest build.zig.zon", async () => {
     const tmp = await mkdtemp(path.join(os.tmpdir(), "setup-zig-test-"));
     try {
       await writeFile(
         path.join(tmp, "build.zig.zon"),
         '.{ .minimum_zig_version = "0.14.0" }',
       );
-      await mkdir(path.join(tmp, "sub"), { recursive: true });
+      const sub = path.join(tmp, "examples", "hello");
+      await mkdir(sub, { recursive: true });
       await writeFile(
-        path.join(tmp, "sub", "build.zig.zon"),
+        path.join(sub, "build.zig.zon"),
         '.{ .minimum_zig_version = "0.16.0" }',
       );
-      expect(await readMinimumZigVersion(tmp)).toBe("0.14.0");
+      expect(await readMinimumZigVersion(sub)).toBe("0.16.0");
     } finally {
       await rm(tmp, { recursive: true, force: true });
     }
@@ -54,7 +56,9 @@ describe("readMinimumZigVersion", () => {
   it("returns undefined when no build.zig.zon exists", async () => {
     const tmp = await mkdtemp(path.join(os.tmpdir(), "setup-zig-test-"));
     try {
-      expect(await readMinimumZigVersion(tmp)).toBeUndefined();
+      const sub = path.join(tmp, "examples", "hello");
+      await mkdir(sub, { recursive: true });
+      expect(await readMinimumZigVersion(sub)).toBeUndefined();
     } finally {
       await rm(tmp, { recursive: true, force: true });
     }

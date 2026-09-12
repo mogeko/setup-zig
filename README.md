@@ -14,7 +14,7 @@ Install the [Zig](https://ziglang.org/) toolchain on a GitHub Actions runner, an
 
 When `version` is not specified, it will try the following in order:
 
-1. Read the `minimum_zig_version` in `build.zig.zon` (supports recursively searching subdirectories)
+1. Read the `minimum_zig_version` in `build.zig.zon`, walking up from the working directory through its parent directories (matching Zig's own lookup order)
 2. Fall back to the latest stable version
 
 ## Inputs

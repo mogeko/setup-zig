@@ -55,17 +55,15 @@ export function getZigGlobalCacheDir(): string {
       process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local");
     return path.join(localAppData, "zig");
   }
-  if (process.platform === "darwin") {
-    return path.join(os.homedir(), "Library", "Caches", "zig");
-  }
+  // Zig uses the XDG cache location on all Unix-like systems, including macOS.
   const cacheHome =
     process.env.XDG_CACHE_HOME ?? path.join(os.homedir(), ".cache");
   return path.join(cacheHome, "zig");
 }
 
-/** Zig project-local cache directory (`.zig-cache` in the workspace). */
-export function getZigLocalCacheDir(workspace: string): string {
-  return path.join(workspace, ".zig-cache");
+/** Zig project-local cache directory (`.zig-cache` under a project root). */
+export function getZigLocalCacheDir(projectDir: string): string {
+  return path.join(projectDir, ".zig-cache");
 }
 
 export async function restoreCache(
