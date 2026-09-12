@@ -37060,6 +37060,9 @@ var external_node_crypto_ = __webpack_require__(7598);
 const external_node_fs_namespaceObject = __rspack_createRequire_require("node:fs");
 ;// CONCATENATED MODULE: external "node:fs/promises"
 const promises_namespaceObject = __rspack_createRequire_require("node:fs/promises");
+;// CONCATENATED MODULE: external "node:os"
+const external_node_os_namespaceObject = __rspack_createRequire_require("node:os");
+var external_node_os_default = /*#__PURE__*/__webpack_require__.n(external_node_os_namespaceObject);
 ;// CONCATENATED MODULE: external "node:path"
 const external_node_path_namespaceObject = __rspack_createRequire_require("node:path");
 var external_node_path_default = /*#__PURE__*/__webpack_require__.n(external_node_path_namespaceObject);
@@ -37606,7 +37609,7 @@ function extractZipNix(file, dest) {
  * @param version       version of the tool.  semver format
  * @param arch          architecture of the tool.  Optional.  Defaults to machine architecture
  */
-function tool_cache_cacheDir(sourceDir, tool, version, arch) {
+function cacheDir(sourceDir, tool, version, arch) {
     return tool_cache_awaiter(this, void 0, void 0, function* () {
         version = node_modules_semver.clean(version) || version;
         arch = arch || external_os_namespaceObject.arch();
@@ -37865,9 +37868,6 @@ function _unique(values) {
     return Array.from(new Set(values));
 }
 //# sourceMappingURL=tool-cache.js.map
-;// CONCATENATED MODULE: external "node:os"
-const external_node_os_namespaceObject = __rspack_createRequire_require("node:os");
-var external_node_os_default = /*#__PURE__*/__webpack_require__.n(external_node_os_namespaceObject);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+glob@0.6.1/node_modules/@actions/glob/lib/internal-glob-options-helper.js
 
 /**
@@ -94104,7 +94104,6 @@ function _ts_generator(thisArg, body) {
 
 
 
-
 var VALID_MODES = [
     "binary",
     "all",
@@ -94116,6 +94115,12 @@ function parseCacheMode(input) {
         throw new Error('Invalid cache input "'.concat(input, '": expected one of ').concat(VALID_MODES.join(", ")));
     }
     return normalized;
+}
+/** Cache key for the downloaded Zig archive (platform + version). */ function tarballCacheKey(triple, version) {
+    return "setup-zig-tarball-".concat(triple, "-").concat(version);
+}
+/** Cache key for the Zig global compile cache. */ function compileCacheKey(triple, version) {
+    return "setup-zig-cache-".concat(triple, "-").concat(version);
 }
 /** Zig global cache directory for the current platform. */ function getZigGlobalCacheDir() {
     var _process_env_XDG_CACHE_HOME;
@@ -94134,49 +94139,26 @@ function parseCacheMode(input) {
     var cacheHome = (_process_env_XDG_CACHE_HOME = process.env.XDG_CACHE_HOME) !== null && _process_env_XDG_CACHE_HOME !== void 0 ? _process_env_XDG_CACHE_HOME : external_node_path_default().join(external_node_os_default().homedir(), ".cache");
     return external_node_path_default().join(cacheHome, "zig");
 }
-function compileCacheKey(version) {
-    var _process_env_RUNNER_OS;
-    var osName = (_process_env_RUNNER_OS = process.env.RUNNER_OS) !== null && _process_env_RUNNER_OS !== void 0 ? _process_env_RUNNER_OS : process.platform;
-    return "setup-zig-cache-".concat(osName, "-").concat(version);
-}
-function restoreCompileCache(cacheDir, key) {
+function cache_restoreCache(paths, key) {
     return _async_to_generator(function() {
         return _ts_generator(this, function(_state) {
-            switch(_state.label){
-                case 0:
-                    core_info("Restoring Zig global cache (".concat(cacheDir, ")..."));
-                    return [
-                        4,
-                        restoreCache([
-                            cacheDir
-                        ], key)
-                    ];
-                case 1:
-                    _state.sent();
-                    return [
-                        2
-                    ];
-            }
+            core_info("Attempting to restore cache with key '".concat(key, "'"));
+            return [
+                2,
+                restoreCache(paths, key)
+            ];
         });
     })();
 }
-function saveCompileCache(cacheDir, key) {
+function src_cache_saveCache(paths, key) {
     return _async_to_generator(function() {
         return _ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
-                    if (!(0,external_node_fs_namespaceObject.existsSync)(cacheDir)) {
-                        core_info("Skipping cache save: ".concat(cacheDir, " does not exist"));
-                        return [
-                            2
-                        ];
-                    }
-                    core_info("Saving Zig global cache (".concat(cacheDir, ")..."));
+                    core_info("Saving cache with key '".concat(key, "'"));
                     return [
                         4,
-                        cache_saveCache([
-                            cacheDir
-                        ], key)
+                        cache_saveCache(paths, key)
                     ];
                 case 1:
                     _state.sent();
@@ -94649,6 +94631,12 @@ function main_async_to_generator(fn) {
         });
     };
 }
+function _instanceof(left, right) {
+    "@swc/helpers - instanceof";
+    if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
+        return !!right[Symbol.hasInstance](left);
+    } else return left instanceof right;
+}
 function main_ts_generator(thisArg, body) {
     var f, y, t, _ = {
         label: 0,
@@ -94760,12 +94748,19 @@ function main_ts_generator(thisArg, body) {
 
 
 
+
 function main_run() {
     return main_async_to_generator(function() {
-        var requestedVersion, cacheMode, _getZigTarget, triple, ext, index, requested, _tmp, resolved, download, cacheHit, installDir, archive, extracted, _tmp1, root, zig;
+        var requestedVersion, cacheMode, _getZigTarget, triple, ext, index, requested, _tmp, resolved, download, cacheHit, installDir, archive, extracted, _tmp1, _process_env_RUNNER_TEMP, tarballPath, tarballKey, restoredKey, extracted1, _tmp2, root, compileDir, zig, compileDir1, error;
         return main_ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
+                    _state.trys.push([
+                        0,
+                        31,
+                        ,
+                        32
+                    ]);
                     requestedVersion = getInput("version");
                     cacheMode = parseCacheMode(getInput("cache"));
                     _getZigTarget = getZigTarget(), triple = _getZigTarget.triple, ext = _getZigTarget.ext;
@@ -94796,81 +94791,167 @@ function main_run() {
                     core_info("Installing Zig ".concat(resolved.version));
                     download = getDownloadFile(index, resolved.key, triple);
                     cacheHit = false;
-                    installDir = find("zig", resolved.version, process.arch);
-                    if (!installDir) return [
+                    if (!(cacheMode === "false")) return [
                         3,
-                        4
+                        11
                     ];
-                    cacheHit = true;
-                    core_info("Found Zig ".concat(resolved.version, " in tool cache"));
-                    return [
-                        3,
-                        13
-                    ];
-                case 4:
                     core_info("Downloading Zig ".concat(resolved.version, " from ").concat(download.tarball));
                     return [
                         4,
                         downloadTool(download.tarball)
                     ];
-                case 5:
+                case 4:
                     archive = _state.sent();
                     return [
                         4,
                         verifySha256(archive, download.shasum)
                     ];
-                case 6:
+                case 5:
                     _state.sent();
                     if (!(ext === "zip")) return [
                         3,
-                        8
+                        7
                     ];
                     return [
                         4,
                         extractZip(archive)
                     ];
-                case 7:
+                case 6:
                     _tmp1 = _state.sent();
                     return [
                         3,
-                        10
+                        9
                     ];
-                case 8:
+                case 7:
                     return [
                         4,
                         extractTar(archive, undefined, "xJ")
                     ];
-                case 9:
+                case 8:
                     _tmp1 = _state.sent();
-                    _state.label = 10;
-                case 10:
+                    _state.label = 9;
+                case 9:
                     extracted = _tmp1;
                     return [
                         4,
                         findZigRoot(extracted)
                     ];
+                case 10:
+                    installDir = _state.sent();
+                    return [
+                        3,
+                        25
+                    ];
                 case 11:
+                    installDir = find("zig", resolved.version, process.arch);
+                    if (!installDir) return [
+                        3,
+                        12
+                    ];
+                    cacheHit = true;
+                    core_info("Found Zig ".concat(resolved.version, " in tool cache"));
+                    return [
+                        3,
+                        25
+                    ];
+                case 12:
+                    tarballPath = external_node_path_default().join((_process_env_RUNNER_TEMP = process.env.RUNNER_TEMP) !== null && _process_env_RUNNER_TEMP !== void 0 ? _process_env_RUNNER_TEMP : external_node_os_default().tmpdir(), "zig-".concat(triple, "-").concat(resolved.version, ".").concat(ext));
+                    tarballKey = tarballCacheKey(triple, resolved.version);
+                    return [
+                        4,
+                        cache_restoreCache([
+                            tarballPath
+                        ], tarballKey)
+                    ];
+                case 13:
+                    restoredKey = _state.sent();
+                    if (!restoredKey) return [
+                        3,
+                        14
+                    ];
+                    cacheHit = true;
+                    core_info("Restored Zig tarball from cache (".concat(restoredKey, ")"));
+                    return [
+                        3,
+                        18
+                    ];
+                case 14:
+                    core_info("Downloading Zig ".concat(resolved.version, " from ").concat(download.tarball));
+                    return [
+                        4,
+                        downloadTool(download.tarball, tarballPath)
+                    ];
+                case 15:
+                    _state.sent();
+                    return [
+                        4,
+                        verifySha256(tarballPath, download.shasum)
+                    ];
+                case 16:
+                    _state.sent();
+                    return [
+                        4,
+                        src_cache_saveCache([
+                            tarballPath
+                        ], tarballKey)
+                    ];
+                case 17:
+                    _state.sent();
+                    _state.label = 18;
+                case 18:
+                    if (!(ext === "zip")) return [
+                        3,
+                        20
+                    ];
+                    return [
+                        4,
+                        extractZip(tarballPath)
+                    ];
+                case 19:
+                    _tmp2 = _state.sent();
+                    return [
+                        3,
+                        22
+                    ];
+                case 20:
+                    return [
+                        4,
+                        extractTar(tarballPath, undefined, "xJ")
+                    ];
+                case 21:
+                    _tmp2 = _state.sent();
+                    _state.label = 22;
+                case 22:
+                    extracted1 = _tmp2;
+                    return [
+                        4,
+                        findZigRoot(extracted1)
+                    ];
+                case 23:
                     root = _state.sent();
                     return [
                         4,
-                        tool_cache_cacheDir(root, "zig", resolved.version, process.arch)
+                        cacheDir(root, "zig", resolved.version, process.arch)
                     ];
-                case 12:
+                case 24:
                     installDir = _state.sent();
-                    _state.label = 13;
-                case 13:
+                    _state.label = 25;
+                case 25:
                     if (!(cacheMode === "all")) return [
                         3,
-                        15
+                        27
                     ];
+                    compileDir = getZigGlobalCacheDir();
                     return [
                         4,
-                        restoreCompileCache(getZigGlobalCacheDir(), compileCacheKey(resolved.version))
+                        cache_restoreCache([
+                            compileDir
+                        ], compileCacheKey(triple, resolved.version))
                     ];
-                case 14:
+                case 26:
                     _state.sent();
-                    _state.label = 15;
-                case 15:
+                    _state.label = 27;
+                case 27:
                     addPath(installDir);
                     core_info("Added ".concat(installDir, " to PATH"));
                     zig = process.platform === "win32" ? "zig.exe" : "zig";
@@ -94880,23 +94961,42 @@ function main_run() {
                             "version"
                         ])
                     ];
-                case 16:
+                case 28:
                     _state.sent();
                     setOutput("version", resolved.version);
                     setOutput("path", installDir);
                     setOutput("cache-hit", cacheHit.toString());
                     if (!(cacheMode === "all")) return [
                         3,
-                        18
+                        30
+                    ];
+                    compileDir1 = getZigGlobalCacheDir();
+                    if (!(0,external_node_fs_namespaceObject.existsSync)(compileDir1)) return [
+                        3,
+                        30
                     ];
                     return [
                         4,
-                        saveCompileCache(getZigGlobalCacheDir(), compileCacheKey(resolved.version))
+                        src_cache_saveCache([
+                            compileDir1
+                        ], compileCacheKey(triple, resolved.version))
                     ];
-                case 17:
+                case 29:
                     _state.sent();
-                    _state.label = 18;
-                case 18:
+                    _state.label = 30;
+                case 30:
+                    return [
+                        3,
+                        32
+                    ];
+                case 31:
+                    error = _state.sent();
+                    setFailed(_instanceof(error, Error) ? error : String(error));
+                    return [
+                        3,
+                        32
+                    ];
+                case 32:
                     return [
                         2
                     ];
@@ -94969,7 +95069,7 @@ function findZigRoot(extracted) {
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
-function _instanceof(left, right) {
+function src_instanceof(left, right) {
     "@swc/helpers - instanceof";
     if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
         return !!right[Symbol.hasInstance](left);
@@ -94978,7 +95078,7 @@ function _instanceof(left, right) {
 
 
 main_run().catch(function(error) {
-    setFailed(_instanceof(error, Error) ? error : String(error));
+    setFailed(src_instanceof(error, Error) ? error : String(error));
 });
 
 })();

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
-import { createReadStream } from "node:fs";
+import { createReadStream, existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import * as core from "@actions/core";
@@ -10,73 +11,114 @@ import {
   compileCacheKey,
   getZigGlobalCacheDir,
   parseCacheMode,
-  restoreCompileCache,
-  saveCompileCache,
+  restoreCache,
+  saveCache,
+  tarballCacheKey,
 } from "./cache";
 import { fetchIndex, getDownloadFile, resolveVersion } from "./index-json";
 import { getZigTarget } from "./platform";
 import { readMinimumZigVersion } from "./zon";
 
 export async function run(): Promise<void> {
-  const requestedVersion = core.getInput("version");
-  const cacheMode = parseCacheMode(core.getInput("cache"));
-  const { triple, ext } = getZigTarget();
+  try {
+    const requestedVersion = core.getInput("version");
+    const cacheMode = parseCacheMode(core.getInput("cache"));
+    const { triple, ext } = getZigTarget();
 
-  const index = await fetchIndex();
+    const index = await fetchIndex();
 
-  const requested =
-    requestedVersion ||
-    (await readMinimumZigVersion(process.cwd())) ||
-    "latest";
-  if (!requestedVersion) {
-    core.info(
-      `No version input; resolved "${requested}" from build.zig.zon or fallback`,
-    );
-  }
-  const resolved = resolveVersion(requested, index);
-  core.info(`Installing Zig ${resolved.version}`);
+    const requested =
+      requestedVersion ||
+      (await readMinimumZigVersion(process.cwd())) ||
+      "latest";
+    if (!requestedVersion) {
+      core.info(
+        `No version input; resolved "${requested}" from build.zig.zon or fallback`,
+      );
+    }
+    const resolved = resolveVersion(requested, index);
+    core.info(`Installing Zig ${resolved.version}`);
 
-  const download = getDownloadFile(index, resolved.key, triple);
+    const download = getDownloadFile(index, resolved.key, triple);
 
-  let cacheHit = false;
-  let installDir = tc.find("zig", resolved.version, process.arch);
-  if (installDir) {
-    cacheHit = true;
-    core.info(`Found Zig ${resolved.version} in tool cache`);
-  } else {
-    core.info(`Downloading Zig ${resolved.version} from ${download.tarball}`);
-    const archive = await tc.downloadTool(download.tarball);
-    await verifySha256(archive, download.shasum);
-    const extracted =
-      ext === "zip"
-        ? await tc.extractZip(archive)
-        : await tc.extractTar(archive, undefined, "xJ");
-    const root = await findZigRoot(extracted);
-    installDir = await tc.cacheDir(root, "zig", resolved.version, process.arch);
-  }
+    let cacheHit = false;
+    let installDir: string;
 
-  if (cacheMode === "all") {
-    await restoreCompileCache(
-      getZigGlobalCacheDir(),
-      compileCacheKey(resolved.version),
-    );
-  }
+    if (cacheMode === "false") {
+      core.info(`Downloading Zig ${resolved.version} from ${download.tarball}`);
+      const archive = await tc.downloadTool(download.tarball);
+      await verifySha256(archive, download.shasum);
+      const extracted =
+        ext === "zip"
+          ? await tc.extractZip(archive)
+          : await tc.extractTar(archive, undefined, "xJ");
+      installDir = await findZigRoot(extracted);
+    } else {
+      installDir = tc.find("zig", resolved.version, process.arch);
+      if (installDir) {
+        cacheHit = true;
+        core.info(`Found Zig ${resolved.version} in tool cache`);
+      } else {
+        const tarballPath = path.join(
+          process.env.RUNNER_TEMP ?? os.tmpdir(),
+          `zig-${triple}-${resolved.version}.${ext}`,
+        );
+        const tarballKey = tarballCacheKey(triple, resolved.version);
+        const restoredKey = await restoreCache([tarballPath], tarballKey);
+        if (restoredKey) {
+          cacheHit = true;
+          core.info(`Restored Zig tarball from cache (${restoredKey})`);
+        } else {
+          core.info(
+            `Downloading Zig ${resolved.version} from ${download.tarball}`,
+          );
+          await tc.downloadTool(download.tarball, tarballPath);
+          await verifySha256(tarballPath, download.shasum);
+          await saveCache([tarballPath], tarballKey);
+        }
+        const extracted =
+          ext === "zip"
+            ? await tc.extractZip(tarballPath)
+            : await tc.extractTar(tarballPath, undefined, "xJ");
+        const root = await findZigRoot(extracted);
+        installDir = await tc.cacheDir(
+          root,
+          "zig",
+          resolved.version,
+          process.arch,
+        );
+      }
+    }
 
-  core.addPath(installDir);
-  core.info(`Added ${installDir} to PATH`);
+    if (cacheMode === "all") {
+      const compileDir = getZigGlobalCacheDir();
+      await restoreCache(
+        [compileDir],
+        compileCacheKey(triple, resolved.version),
+      );
+    }
 
-  const zig = process.platform === "win32" ? "zig.exe" : "zig";
-  await exec.exec(path.join(installDir, zig), ["version"]);
+    core.addPath(installDir);
+    core.info(`Added ${installDir} to PATH`);
 
-  core.setOutput("version", resolved.version);
-  core.setOutput("path", installDir);
-  core.setOutput("cache-hit", cacheHit.toString());
+    const zig = process.platform === "win32" ? "zig.exe" : "zig";
+    await exec.exec(path.join(installDir, zig), ["version"]);
 
-  if (cacheMode === "all") {
-    await saveCompileCache(
-      getZigGlobalCacheDir(),
-      compileCacheKey(resolved.version),
-    );
+    core.setOutput("version", resolved.version);
+    core.setOutput("path", installDir);
+    core.setOutput("cache-hit", cacheHit.toString());
+
+    if (cacheMode === "all") {
+      const compileDir = getZigGlobalCacheDir();
+      if (existsSync(compileDir)) {
+        await saveCache(
+          [compileDir],
+          compileCacheKey(triple, resolved.version),
+        );
+      }
+    }
+  } catch (error) {
+    core.setFailed(error instanceof Error ? error : String(error));
   }
 }
 

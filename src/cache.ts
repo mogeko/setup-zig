@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import * as cache from "@actions/cache";
@@ -16,6 +15,16 @@ export function parseCacheMode(input: string): CacheMode {
     );
   }
   return normalized as CacheMode;
+}
+
+/** Cache key for the downloaded Zig archive (platform + version). */
+export function tarballCacheKey(triple: string, version: string): string {
+  return `setup-zig-tarball-${triple}-${version}`;
+}
+
+/** Cache key for the Zig global compile cache. */
+export function compileCacheKey(triple: string, version: string): string {
+  return `setup-zig-cache-${triple}-${version}`;
 }
 
 /** Zig global cache directory for the current platform. */
@@ -37,27 +46,15 @@ export function getZigGlobalCacheDir(): string {
   return path.join(cacheHome, "zig");
 }
 
-export function compileCacheKey(version: string): string {
-  const osName = process.env.RUNNER_OS ?? process.platform;
-  return `setup-zig-cache-${osName}-${version}`;
+export async function restoreCache(
+  paths: string[],
+  key: string,
+): Promise<string | undefined> {
+  core.info(`Attempting to restore cache with key '${key}'`);
+  return cache.restoreCache(paths, key);
 }
 
-export async function restoreCompileCache(
-  cacheDir: string,
-  key: string,
-): Promise<void> {
-  core.info(`Restoring Zig global cache (${cacheDir})...`);
-  await cache.restoreCache([cacheDir], key);
-}
-
-export async function saveCompileCache(
-  cacheDir: string,
-  key: string,
-): Promise<void> {
-  if (!existsSync(cacheDir)) {
-    core.info(`Skipping cache save: ${cacheDir} does not exist`);
-    return;
-  }
-  core.info(`Saving Zig global cache (${cacheDir})...`);
-  await cache.saveCache([cacheDir], key);
+export async function saveCache(paths: string[], key: string): Promise<void> {
+  core.info(`Saving cache with key '${key}'`);
+  await cache.saveCache(paths, key);
 }
