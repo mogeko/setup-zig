@@ -1338,7 +1338,7 @@ exports.colors = [6, 2, 3, 4, 5, 1];
 try {
 	// Optional dependency (as in, doesn't need to be installed, NOT like optionalDependencies in package.json)
 	// eslint-disable-next-line import/no-extraneous-dependencies
-	const supportsColor = __webpack_require__(Object(function __rspack_missing_module() { var e = new Error("Cannot find module 'supports-color'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	const supportsColor = __webpack_require__(4966);
 
 	if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
 		exports.colors = [
@@ -6120,7 +6120,7 @@ __rspack_unused_export = Client
 __rspack_unused_export = Pool
 __rspack_unused_export = BalancedPool
 __rspack_unused_export = Agent
-module.exports.kT = ProxyAgent
+module.exports.ProxyAgent = ProxyAgent
 __rspack_unused_export = EnvHttpProxyAgent
 __rspack_unused_export = RetryAgent
 __rspack_unused_export = RetryHandler
@@ -15904,7 +15904,7 @@ module.exports = globalOpts => {
 var __rspack_unused_export;
 
 __rspack_unused_export = ({ value: true });
-__rspack_unused_export = exports.ww = __rspack_unused_export = exports.oC = __rspack_unused_export = exports.GP = __rspack_unused_export = exports.e9 = __rspack_unused_export = exports.l5 = exports.Xc = __rspack_unused_export = exports.M$ = exports.N_ = exports.pF = __rspack_unused_export = exports.Y6 = exports.Nh = exports.CV = exports.KO = exports.XV = __rspack_unused_export = __rspack_unused_export = __rspack_unused_export = exports.J8 = exports.W4 = exports.Wg = exports.TYPE = exports.ERROR = void 0;
+__rspack_unused_export = exports.HEADER_STATE = __rspack_unused_export = exports.MAJOR = __rspack_unused_export = exports.HEADER_CHARS = __rspack_unused_export = exports.STRICT_TOKEN = __rspack_unused_export = exports.URL_CHAR = exports.STRICT_URL_CHAR = __rspack_unused_export = exports.MARK = exports.ALPHANUM = exports.NUM = __rspack_unused_export = exports.NUM_MAP = exports.ALPHA = exports.FINISH = exports.H_METHOD_MAP = exports.METHOD_MAP = __rspack_unused_export = __rspack_unused_export = __rspack_unused_export = exports.METHODS = exports.LENIENT_FLAGS = exports.FLAGS = exports.TYPE = exports.ERROR = void 0;
 const utils_1 = __webpack_require__(7396);
 // C headers
 var ERROR;
@@ -15953,13 +15953,13 @@ var FLAGS;
     FLAGS[FLAGS["TRAILING"] = 128] = "TRAILING";
     // 1 << 8 is unused
     FLAGS[FLAGS["TRANSFER_ENCODING"] = 512] = "TRANSFER_ENCODING";
-})(FLAGS = exports.Wg || (exports.Wg = {}));
+})(FLAGS = exports.FLAGS || (exports.FLAGS = {}));
 var LENIENT_FLAGS;
 (function (LENIENT_FLAGS) {
     LENIENT_FLAGS[LENIENT_FLAGS["HEADERS"] = 1] = "HEADERS";
     LENIENT_FLAGS[LENIENT_FLAGS["CHUNKED_LENGTH"] = 2] = "CHUNKED_LENGTH";
     LENIENT_FLAGS[LENIENT_FLAGS["KEEP_ALIVE"] = 4] = "KEEP_ALIVE";
-})(LENIENT_FLAGS = exports.W4 || (exports.W4 = {}));
+})(LENIENT_FLAGS = exports.LENIENT_FLAGS || (exports.LENIENT_FLAGS = {}));
 var METHODS;
 (function (METHODS) {
     METHODS[METHODS["DELETE"] = 0] = "DELETE";
@@ -16019,7 +16019,7 @@ var METHODS;
     METHODS[METHODS["RECORD"] = 44] = "RECORD";
     /* RAOP */
     METHODS[METHODS["FLUSH"] = 45] = "FLUSH";
-})(METHODS = exports.J8 || (exports.J8 = {}));
+})(METHODS = exports.METHODS || (exports.METHODS = {}));
 __rspack_unused_export = [
     METHODS.DELETE,
     METHODS.GET,
@@ -16078,11 +16078,11 @@ __rspack_unused_export = [
     METHODS.GET,
     METHODS.POST,
 ];
-exports.XV = utils_1.enumToMap(METHODS);
-exports.KO = {};
-Object.keys(exports.XV).forEach((key) => {
+exports.METHOD_MAP = utils_1.enumToMap(METHODS);
+exports.H_METHOD_MAP = {};
+Object.keys(exports.METHOD_MAP).forEach((key) => {
     if (/^H/.test(key)) {
-        exports.KO[key] = exports.XV[key];
+        exports.H_METHOD_MAP[key] = exports.METHOD_MAP[key];
     }
 });
 var FINISH;
@@ -16090,15 +16090,15 @@ var FINISH;
     FINISH[FINISH["SAFE"] = 0] = "SAFE";
     FINISH[FINISH["SAFE_WITH_CB"] = 1] = "SAFE_WITH_CB";
     FINISH[FINISH["UNSAFE"] = 2] = "UNSAFE";
-})(FINISH = exports.CV || (exports.CV = {}));
-exports.Nh = [];
+})(FINISH = exports.FINISH || (exports.FINISH = {}));
+exports.ALPHA = [];
 for (let i = 'A'.charCodeAt(0); i <= 'Z'.charCodeAt(0); i++) {
     // Upper case
-    exports.Nh.push(String.fromCharCode(i));
+    exports.ALPHA.push(String.fromCharCode(i));
     // Lower case
-    exports.Nh.push(String.fromCharCode(i + 0x20));
+    exports.ALPHA.push(String.fromCharCode(i + 0x20));
 }
-exports.Y6 = {
+exports.NUM_MAP = {
     0: 0, 1: 1, 2: 2, 3: 3, 4: 4,
     5: 5, 6: 6, 7: 7, 8: 8, 9: 9,
 };
@@ -16108,28 +16108,28 @@ __rspack_unused_export = {
     A: 0XA, B: 0XB, C: 0XC, D: 0XD, E: 0XE, F: 0XF,
     a: 0xa, b: 0xb, c: 0xc, d: 0xd, e: 0xe, f: 0xf,
 };
-exports.pF = [
+exports.NUM = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 ];
-exports.N_ = exports.Nh.concat(exports.pF);
-exports.M$ = ['-', '_', '.', '!', '~', '*', '\'', '(', ')'];
-__rspack_unused_export = exports.N_.concat(exports.M$)
+exports.ALPHANUM = exports.ALPHA.concat(exports.NUM);
+exports.MARK = ['-', '_', '.', '!', '~', '*', '\'', '(', ')'];
+__rspack_unused_export = exports.ALPHANUM.concat(exports.MARK)
     .concat(['%', ';', ':', '&', '=', '+', '$', ',']);
 // TODO(indutny): use RFC
-exports.Xc = [
+exports.STRICT_URL_CHAR = [
     '!', '"', '$', '%', '&', '\'',
     '(', ')', '*', '+', ',', '-', '.', '/',
     ':', ';', '<', '=', '>',
     '@', '[', '\\', ']', '^', '_',
     '`',
     '{', '|', '}', '~',
-].concat(exports.N_);
-exports.l5 = exports.Xc.concat(['\t', '\f']);
+].concat(exports.ALPHANUM);
+exports.URL_CHAR = exports.STRICT_URL_CHAR.concat(['\t', '\f']);
 // All characters with 0x80 bit set to 1
 for (let i = 0x80; i <= 0xff; i++) {
-    exports.l5.push(i);
+    exports.URL_CHAR.push(i);
 }
-__rspack_unused_export = exports.pF.concat(['a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F']);
+__rspack_unused_export = exports.NUM.concat(['a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F']);
 /* Tokens as defined by rfc 2616. Also lowercases them.
  *        token       = 1*<any CHAR except CTLs or separators>
  *     separators     = "(" | ")" | "<" | ">" | "@"
@@ -16137,27 +16137,27 @@ __rspack_unused_export = exports.pF.concat(['a', 'b', 'c', 'd', 'e', 'f', 'A', '
  *                    | "/" | "[" | "]" | "?" | "="
  *                    | "{" | "}" | SP | HT
  */
-exports.e9 = [
+exports.STRICT_TOKEN = [
     '!', '#', '$', '%', '&', '\'',
     '*', '+', '-', '.',
     '^', '_', '`',
     '|', '~',
-].concat(exports.N_);
-__rspack_unused_export = exports.e9.concat([' ']);
+].concat(exports.ALPHANUM);
+__rspack_unused_export = exports.STRICT_TOKEN.concat([' ']);
 /*
  * Verify that a char is a valid visible (printable) US-ASCII
  * character or %x80-FF
  */
-exports.GP = ['\t'];
+exports.HEADER_CHARS = ['\t'];
 for (let i = 32; i <= 255; i++) {
     if (i !== 127) {
-        exports.GP.push(i);
+        exports.HEADER_CHARS.push(i);
     }
 }
 // ',' = \x44
-__rspack_unused_export = exports.GP.filter((c) => c !== 44);
-exports.oC = exports.Y6;
-__rspack_unused_export = exports.oC;
+__rspack_unused_export = exports.HEADER_CHARS.filter((c) => c !== 44);
+exports.MAJOR = exports.NUM_MAP;
+__rspack_unused_export = exports.MAJOR;
 var HEADER_STATE;
 (function (HEADER_STATE) {
     HEADER_STATE[HEADER_STATE["GENERAL"] = 0] = "GENERAL";
@@ -16169,7 +16169,7 @@ var HEADER_STATE;
     HEADER_STATE[HEADER_STATE["CONNECTION_CLOSE"] = 6] = "CONNECTION_CLOSE";
     HEADER_STATE[HEADER_STATE["CONNECTION_UPGRADE"] = 7] = "CONNECTION_UPGRADE";
     HEADER_STATE[HEADER_STATE["TRANSFER_ENCODING_CHUNKED"] = 8] = "TRANSFER_ENCODING_CHUNKED";
-})(HEADER_STATE = exports.ww || (exports.ww = {}));
+})(HEADER_STATE = exports.HEADER_STATE || (exports.HEADER_STATE = {}));
 __rspack_unused_export = {
     'connection': HEADER_STATE.CONNECTION,
     'content-length': HEADER_STATE.CONTENT_LENGTH,
@@ -33776,6 +33776,10 @@ module.exports = __rspack_createRequire_require("url");
 module.exports = __rspack_createRequire_require("util");
 
 },
+4966() {
+/* (ignored) */
+
+},
 6520(module, __unused_rspack_exports, __webpack_require__) {
 // This file exists as a CommonJS module to read the version from package.json.
 // In an ESM package, using `require()` directly in .ts files requires disabling
@@ -33793,11 +33797,11 @@ var __rspack_unused_export;
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 __rspack_unused_export = ({ value: true });
-exports.w = void 0;
+exports.state = void 0;
 /**
  * Holds the singleton operationRequestMap, to be shared across CJS and ESM imports.
  */
-exports.w = {
+exports.state = {
     operationRequestMap: new WeakMap(),
 };
 //# sourceMappingURL=state-cjs.js.map
@@ -33809,13 +33813,13 @@ var __rspack_unused_export;
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 __rspack_unused_export = ({ value: true });
-exports.w = void 0;
+exports.state = void 0;
 /**
  * @internal
  *
  * Holds the singleton instrumenter, to be shared across CJS and ESM imports.
  */
-exports.w = {
+exports.state = {
     instrumenterImplementation: undefined,
 };
 //# sourceMappingURL=state-cjs.js.map
@@ -34980,7 +34984,7 @@ class lib_HttpClient {
             return proxyAgent;
         }
         const usingSsl = parsedUrl.protocol === 'https:';
-        proxyAgent = new undici/* .ProxyAgent */.kT(Object.assign({ uri: proxyUrl.href, pipelining: !this._keepAlive ? 0 : 1 }, ((proxyUrl.username || proxyUrl.password) && {
+        proxyAgent = new undici.ProxyAgent(Object.assign({ uri: proxyUrl.href, pipelining: !this._keepAlive ? 0 : 1 }, ((proxyUrl.username || proxyUrl.password) && {
             token: `Basic ${Buffer.from(`${proxyUrl.username}:${proxyUrl.password}`).toString('base64')}`
         })));
         this._proxyAgentDispatcher = proxyAgent;
@@ -42641,7 +42645,7 @@ var state_cjs = __webpack_require__(7301);
 /**
  * Defines the shared state between CJS and ESM by re-exporting the CJS state.
  */
-const state_state = state_cjs/* .state */.w;
+const state_state = state_cjs.state;
 //# sourceMappingURL=state.js.map
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@azure+core-tracing@1.4.0/node_modules/@azure/core-tracing/dist/esm/instrumenter.js
 // Copyright (c) Microsoft Corporation.
@@ -44985,7 +44989,7 @@ var commonjs_state_cjs = __webpack_require__(3970);
 /**
  * Defines the shared state between CJS and ESM by re-exporting the CJS state.
  */
-const esm_state_state = commonjs_state_cjs/* .state */.w;
+const esm_state_state = commonjs_state_cjs.state;
 //# sourceMappingURL=state.js.map
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@azure+core-client@1.11.1/node_modules/@azure/core-client/dist/esm/operationHelpers.js
 // Copyright (c) Microsoft Corporation.

@@ -38,8 +38,22 @@ export default {
   },
   resolve: {
     extensions: [".ts", ".js"],
+    // Prefer ESM builds of dependencies so they can be tree-shaken
+    // (e.g. @azure/storage-blob ships CJS as `main` and ESM as `module`).
+    mainFields: ["module", "main"],
+    alias: {
+      // Optional dependency of the `debug` package; stub it out to silence the
+      // "Can't resolve 'supports-color'" build warning.
+      "supports-color": false,
+    },
   },
   optimization: {
+    // Keep the output readable (no minification), but drop dead code.
     minimize: false,
+    sideEffects: true,
+    usedExports: true,
+    providedExports: true,
+    innerGraph: true,
+    mangleExports: false,
   },
 };
