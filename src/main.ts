@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { createReadStream, existsSync } from "node:fs";
+import { createReadStream } from "node:fs";
 import { readdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -8,13 +8,17 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as tc from "@actions/tool-cache";
 import {
-  compileCacheKey,
   getZigGlobalCacheDir,
+  getZigLocalCacheDir,
+  globalCacheKey,
+  localCacheKey,
+  localCacheRestoreKeys,
   parseCacheMode,
   restoreCache,
   saveCache,
   tarballCacheKey,
 } from "./cache";
+import { hashBuildInputs } from "./hash";
 import { fetchIndex, getDownloadFile, resolveVersion } from "./index-json";
 import { getZigTarget } from "./platform";
 import { readMinimumZigVersion } from "./zon";
@@ -91,11 +95,20 @@ export async function run(): Promise<void> {
     }
 
     if (cacheMode === "all") {
-      const compileDir = getZigGlobalCacheDir();
+      const buildHash = await hashBuildInputs(process.cwd());
+      const globalDir = getZigGlobalCacheDir();
+      const localDir = getZigLocalCacheDir(process.cwd());
+      await restoreCache([globalDir], globalCacheKey(triple, resolved.version));
       await restoreCache(
-        [compileDir],
-        compileCacheKey(triple, resolved.version),
+        [localDir],
+        localCacheKey(triple, resolved.version, buildHash),
+        localCacheRestoreKeys(triple, resolved.version),
       );
+
+      core.saveState("setup-zig-cache-mode", cacheMode);
+      core.saveState("setup-zig-triple", triple);
+      core.saveState("setup-zig-version", resolved.version);
+      core.saveState("setup-zig-build-hash", buildHash);
     }
 
     core.addPath(installDir);
@@ -107,16 +120,6 @@ export async function run(): Promise<void> {
     core.setOutput("version", resolved.version);
     core.setOutput("path", installDir);
     core.setOutput("cache-hit", cacheHit.toString());
-
-    if (cacheMode === "all") {
-      const compileDir = getZigGlobalCacheDir();
-      if (existsSync(compileDir)) {
-        await saveCache(
-          [compileDir],
-          compileCacheKey(triple, resolved.version),
-        );
-      }
-    }
   } catch (error) {
     core.setFailed(error instanceof Error ? error : String(error));
   }

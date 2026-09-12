@@ -7,13 +7,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default {
   mode: "production",
   target: "node",
-  entry: "./src/index.ts",
+  entry: {
+    index: "./src/index.ts",
+    post: "./src/post.ts",
+  },
   experiments: {
     outputModule: true,
   },
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "index.js",
+    filename: "[name].js",
     module: true,
     clean: true,
   },

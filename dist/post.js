@@ -33922,6 +33922,8 @@ __webpack_require__.r = (exports) => {
 var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
+
+// UNUSED EXPORTS: run
 // NAMESPACE OBJECT: ./node_modules/.pnpm/@azure+storage-blob@12.33.0/node_modules/@azure/storage-blob/dist/esm/generated/src/models/mappers.js
 var mappers_namespaceObject = {};
 __webpack_require__.r(mappers_namespaceObject);
@@ -34107,6 +34109,8 @@ __webpack_require__.d(mappers_namespaceObject, {
   UserDelegationKey: () => (UserDelegationKey) });
 
 
+;// CONCATENATED MODULE: external "node:fs"
+const external_node_fs_namespaceObject = __rspack_createRequire_require("node:fs");
 ;// CONCATENATED MODULE: external "os"
 const external_os_namespaceObject = __rspack_createRequire_require("os");
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+core@3.0.1/node_modules/@actions/core/lib/utils.js
@@ -34254,16 +34258,16 @@ function file_command_issueFileCommand(command, message) {
     if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
     }
-    if (!external_fs_namespaceObject.existsSync(filePath)) {
+    if (!fs.existsSync(filePath)) {
         throw new Error(`Missing file at path: ${filePath}`);
     }
-    external_fs_namespaceObject.appendFileSync(filePath, `${utils_toCommandValue(message)}${external_os_namespaceObject.EOL}`, {
+    fs.appendFileSync(filePath, `${toCommandValue(message)}${os.EOL}`, {
         encoding: 'utf8'
     });
 }
 function file_command_prepareKeyValueMessage(key, value) {
-    const delimiter = `ghadelimiter_${external_crypto_namespaceObject.randomUUID()}`;
-    const convertedValue = utils_toCommandValue(value);
+    const delimiter = `ghadelimiter_${crypto.randomUUID()}`;
+    const convertedValue = toCommandValue(value);
     // These should realistically never happen, but just in case someone finds a
     // way to exploit uuid generation let's not allow keys or values that contain
     // the delimiter.
@@ -34273,7 +34277,7 @@ function file_command_prepareKeyValueMessage(key, value) {
     if (convertedValue.includes(delimiter)) {
         throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
     }
-    return `${key}<<${delimiter}${external_os_namespaceObject.EOL}${convertedValue}${external_os_namespaceObject.EOL}${delimiter}`;
+    return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
 }
 //# sourceMappingURL=file-command.js.map
 // EXTERNAL MODULE: external "path"
@@ -34457,12 +34461,12 @@ const HttpResponseRetryCodes = [
 const RetryableHttpVerbs = ['OPTIONS', 'GET', 'DELETE', 'HEAD'];
 const ExponentialBackoffCeiling = 10;
 const ExponentialBackoffTimeSlice = 5;
-class HttpClientError extends Error {
+class lib_HttpClientError extends Error {
     constructor(message, statusCode) {
         super(message);
         this.name = 'HttpClientError';
         this.statusCode = statusCode;
-        Object.setPrototypeOf(this, HttpClientError.prototype);
+        Object.setPrototypeOf(this, lib_HttpClientError.prototype);
     }
 }
 class HttpClientResponse {
@@ -35063,7 +35067,7 @@ class lib_HttpClient {
                     else {
                         msg = `Failed request: (${statusCode})`;
                     }
-                    const err = new HttpClientError(msg, statusCode);
+                    const err = new lib_HttpClientError(msg, statusCode);
                     err.result = response.result;
                     reject(err);
                 }
@@ -35577,7 +35581,7 @@ const io_util_IS_WINDOWS = process.platform === 'win32';
  */
 function readlink(fsPath) {
     return io_util_awaiter(this, void 0, void 0, function* () {
-        const result = yield external_fs_namespaceObject.promises.readlink(fsPath);
+        const result = yield fs.promises.readlink(fsPath);
         // On Windows, restore Node 20 behavior: add trailing backslash to all results
         // since junctions on Windows are always directory links
         if (io_util_IS_WINDOWS && !result.endsWith('\\')) {
@@ -35753,19 +35757,19 @@ var io_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argum
 function io_cp(source_1, dest_1) {
     return io_awaiter(this, arguments, void 0, function* (source, dest, options = {}) {
         const { force, recursive, copySourceDirectory } = readCopyOptions(options);
-        const destStat = (yield exists(dest)) ? yield stat(dest) : null;
+        const destStat = (yield ioUtil.exists(dest)) ? yield ioUtil.stat(dest) : null;
         // Dest is an existing file, but not forcing
         if (destStat && destStat.isFile() && !force) {
             return;
         }
         // If dest is an existing directory, should copy inside.
         const newDest = destStat && destStat.isDirectory() && copySourceDirectory
-            ? external_path_.join(dest, external_path_.basename(source))
+            ? path.join(dest, path.basename(source))
             : dest;
-        if (!(yield exists(source))) {
+        if (!(yield ioUtil.exists(source))) {
             throw new Error(`no such file or directory: ${source}`);
         }
-        const sourceStat = yield stat(source);
+        const sourceStat = yield ioUtil.stat(source);
         if (sourceStat.isDirectory()) {
             if (!recursive) {
                 throw new Error(`Failed to copy. ${source} is a directory, but tried to copy without recursive flag.`);
@@ -35775,7 +35779,7 @@ function io_cp(source_1, dest_1) {
             }
         }
         else {
-            if (external_path_.relative(source, newDest) === '') {
+            if (path.relative(source, newDest) === '') {
                 // a file cannot be copied to itself
                 throw new Error(`'${newDest}' and '${source}' are the same file`);
             }
@@ -35819,7 +35823,7 @@ function mv(source_1, dest_1) {
  */
 function rmRF(inputPath) {
     return io_awaiter(this, void 0, void 0, function* () {
-        if (io_util_IS_WINDOWS) {
+        if (ioUtil.IS_WINDOWS) {
             // Check for invalid characters
             // https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
             if (/[*"<>|]/.test(inputPath)) {
@@ -35828,7 +35832,7 @@ function rmRF(inputPath) {
         }
         try {
             // note if path does not exist, error is silent
-            yield rm(inputPath, {
+            yield ioUtil.rm(inputPath, {
                 force: true,
                 maxRetries: 3,
                 recursive: true,
@@ -35957,11 +35961,11 @@ function cpDirRecursive(sourceDir, destDir, currentDepth, force) {
             return;
         currentDepth++;
         yield mkdirP(destDir);
-        const files = yield readdir(sourceDir);
+        const files = yield ioUtil.readdir(sourceDir);
         for (const fileName of files) {
             const srcFile = `${sourceDir}/${fileName}`;
             const destFile = `${destDir}/${fileName}`;
-            const srcFileStat = yield lstat(srcFile);
+            const srcFileStat = yield ioUtil.lstat(srcFile);
             if (srcFileStat.isDirectory()) {
                 // Recurse
                 yield cpDirRecursive(srcFile, destFile, currentDepth, force);
@@ -35971,32 +35975,32 @@ function cpDirRecursive(sourceDir, destDir, currentDepth, force) {
             }
         }
         // Change the mode for the newly created directory
-        yield chmod(destDir, (yield stat(sourceDir)).mode);
+        yield ioUtil.chmod(destDir, (yield ioUtil.stat(sourceDir)).mode);
     });
 }
 // Buffered file copy
 function io_copyFile(srcFile, destFile, force) {
     return io_awaiter(this, void 0, void 0, function* () {
-        if ((yield lstat(srcFile)).isSymbolicLink()) {
+        if ((yield ioUtil.lstat(srcFile)).isSymbolicLink()) {
             // unlink/re-link it
             try {
-                yield lstat(destFile);
-                yield unlink(destFile);
+                yield ioUtil.lstat(destFile);
+                yield ioUtil.unlink(destFile);
             }
             catch (e) {
                 // Try to override file permission
                 if (e.code === 'EPERM') {
-                    yield chmod(destFile, '0666');
-                    yield unlink(destFile);
+                    yield ioUtil.chmod(destFile, '0666');
+                    yield ioUtil.unlink(destFile);
                 }
                 // other errors = it doesn't exist, no work to do
             }
             // Copy over symlink
-            const symlinkFull = yield readlink(srcFile);
-            yield symlink(symlinkFull, destFile, io_util_IS_WINDOWS ? 'junction' : null);
+            const symlinkFull = yield ioUtil.readlink(srcFile);
+            yield ioUtil.symlink(symlinkFull, destFile, ioUtil.IS_WINDOWS ? 'junction' : null);
         }
-        else if (!(yield exists(destFile)) || force) {
-            yield copyFile(srcFile, destFile);
+        else if (!(yield ioUtil.exists(destFile)) || force) {
+            yield ioUtil.copyFile(srcFile, destFile);
         }
     });
 }
@@ -36717,19 +36721,19 @@ const getLinuxInfo = () => platform_awaiter(void 0, void 0, void 0, function* ()
         version
     };
 });
-const platform_platform = external_os_namespaceObject.platform();
-const platform_arch = external_os_namespaceObject.arch();
-const isWindows = (/* unused pure expression or super */ null && (platform_platform === 'win32'));
-const isMacOS = (/* unused pure expression or super */ null && (platform_platform === 'darwin'));
-const isLinux = (/* unused pure expression or super */ null && (platform_platform === 'linux'));
+const platform = external_os_namespaceObject.platform();
+const arch = external_os_namespaceObject.arch();
+const isWindows = (/* unused pure expression or super */ null && (platform === 'win32'));
+const isMacOS = (/* unused pure expression or super */ null && (platform === 'darwin'));
+const isLinux = (/* unused pure expression or super */ null && (platform === 'linux'));
 function getDetails() {
     return platform_awaiter(this, void 0, void 0, function* () {
         return Object.assign(Object.assign({}, (yield (isWindows
             ? getWindowsInfo()
             : isMacOS
                 ? getMacOsInfo()
-                : getLinuxInfo()))), { platform: platform_platform,
-            arch: platform_arch,
+                : getLinuxInfo()))), { platform,
+            arch,
             isWindows,
             isMacOS,
             isLinux });
@@ -36823,12 +36827,12 @@ function core_setSecret(secret) {
 function addPath(inputPath) {
     const filePath = process.env['GITHUB_PATH'] || '';
     if (filePath) {
-        file_command_issueFileCommand('PATH', inputPath);
+        issueFileCommand('PATH', inputPath);
     }
     else {
-        command_issueCommand('add-path', {}, inputPath);
+        issueCommand('add-path', {}, inputPath);
     }
-    process.env['PATH'] = `${inputPath}${external_path_.delimiter}${process.env['PATH']}`;
+    process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
 }
 /**
  * Gets the value of an input.
@@ -36897,10 +36901,10 @@ function getBooleanInput(name, options) {
 function setOutput(name, value) {
     const filePath = process.env['GITHUB_OUTPUT'] || '';
     if (filePath) {
-        return file_command_issueFileCommand('OUTPUT', file_command_prepareKeyValueMessage(name, value));
+        return issueFileCommand('OUTPUT', prepareKeyValueMessage(name, value));
     }
-    process.stdout.write(external_os_namespaceObject.EOL);
-    command_issueCommand('set-output', { name }, utils_toCommandValue(value));
+    process.stdout.write(os.EOL);
+    issueCommand('set-output', { name }, toCommandValue(value));
 }
 /**
  * Enables or disables the echoing of commands into stdout for the rest of the step.
@@ -37019,9 +37023,9 @@ function core_group(name, fn) {
 function saveState(name, value) {
     const filePath = process.env['GITHUB_STATE'] || '';
     if (filePath) {
-        return file_command_issueFileCommand('STATE', file_command_prepareKeyValueMessage(name, value));
+        return issueFileCommand('STATE', prepareKeyValueMessage(name, value));
     }
-    command_issueCommand('save-state', { name }, utils_toCommandValue(value));
+    issueCommand('save-state', { name }, toCommandValue(value));
 }
 /**
  * Gets the value of an state set by this action's main execution.
@@ -37054,820 +37058,12 @@ function getIDToken(aud) {
  */
 
 //# sourceMappingURL=core.js.map
-// EXTERNAL MODULE: external "node:crypto"
-var external_node_crypto_ = __webpack_require__(7598);
-;// CONCATENATED MODULE: external "node:fs"
-const external_node_fs_namespaceObject = __rspack_createRequire_require("node:fs");
-;// CONCATENATED MODULE: external "node:fs/promises"
-const promises_namespaceObject = __rspack_createRequire_require("node:fs/promises");
 ;// CONCATENATED MODULE: external "node:os"
 const external_node_os_namespaceObject = __rspack_createRequire_require("node:os");
 var external_node_os_default = /*#__PURE__*/__webpack_require__.n(external_node_os_namespaceObject);
 ;// CONCATENATED MODULE: external "node:path"
 const external_node_path_namespaceObject = __rspack_createRequire_require("node:path");
 var external_node_path_default = /*#__PURE__*/__webpack_require__.n(external_node_path_namespaceObject);
-;// CONCATENATED MODULE: external "node:stream/promises"
-const external_node_stream_promises_namespaceObject = __rspack_createRequire_require("node:stream/promises");
-// EXTERNAL MODULE: ./node_modules/.pnpm/semver@7.8.5/node_modules/semver/index.js
-var node_modules_semver = __webpack_require__(3115);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+tool-cache@4.0.0/node_modules/@actions/tool-cache/lib/manifest.js
-var manifest_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-
-
-
-// Internal object for testability (allows mocking in ESM)
-const _internal = (/* unused pure expression or super */ null && ({
-    readLinuxVersionFile() {
-        const lsbReleaseFile = '/etc/lsb-release';
-        const osReleaseFile = '/etc/os-release';
-        let contents = '';
-        if (fs.existsSync(lsbReleaseFile)) {
-            contents = fs.readFileSync(lsbReleaseFile).toString();
-        }
-        else if (fs.existsSync(osReleaseFile)) {
-            contents = fs.readFileSync(osReleaseFile).toString();
-        }
-        return contents;
-    }
-}));
-function _findMatch(versionSpec, stable, candidates, archFilter) {
-    return manifest_awaiter(this, void 0, void 0, function* () {
-        const platFilter = os.platform();
-        let result;
-        let match;
-        let file;
-        for (const candidate of candidates) {
-            const version = candidate.version;
-            debug(`check ${version} satisfies ${versionSpec}`);
-            if (semver.satisfies(version, versionSpec) &&
-                (!stable || candidate.stable === stable)) {
-                file = candidate.files.find(item => {
-                    debug(`${item.arch}===${archFilter} && ${item.platform}===${platFilter}`);
-                    let chk = item.arch === archFilter && item.platform === platFilter;
-                    if (chk && item.platform_version) {
-                        const osVersion = _getOsVersion();
-                        if (osVersion === item.platform_version) {
-                            chk = true;
-                        }
-                        else {
-                            chk = semver.satisfies(osVersion, item.platform_version);
-                        }
-                    }
-                    return chk;
-                });
-                if (file) {
-                    debug(`matched ${candidate.version}`);
-                    match = candidate;
-                    break;
-                }
-            }
-        }
-        if (match && file) {
-            // clone since we're mutating the file list to be only the file that matches
-            result = Object.assign({}, match);
-            result.files = [file];
-        }
-        return result;
-    });
-}
-function _getOsVersion() {
-    // TODO: add windows and other linux, arm variants
-    // right now filtering on version is only an ubuntu and macos scenario for tools we build for hosted (python)
-    const plat = os.platform();
-    let version = '';
-    if (plat === 'darwin') {
-        version = cp.execSync('sw_vers -productVersion').toString();
-    }
-    else if (plat === 'linux') {
-        // lsb_release process not in some containers, readfile
-        // Run cat /etc/lsb-release
-        // DISTRIB_ID=Ubuntu
-        // DISTRIB_RELEASE=18.04
-        // DISTRIB_CODENAME=bionic
-        // DISTRIB_DESCRIPTION="Ubuntu 18.04.4 LTS"
-        const lsbContents = _internal.readLinuxVersionFile();
-        if (lsbContents) {
-            const lines = lsbContents.split('\n');
-            for (const line of lines) {
-                const parts = line.split('=');
-                if (parts.length === 2 &&
-                    (parts[0].trim() === 'VERSION_ID' ||
-                        parts[0].trim() === 'DISTRIB_RELEASE')) {
-                    version = parts[1].trim().replace(/^"/, '').replace(/"$/, '');
-                    break;
-                }
-            }
-        }
-    }
-    return version;
-}
-// Alias for backwards compatibility
-function _readLinuxVersionFile() {
-    return _internal.readLinuxVersionFile();
-}
-//# sourceMappingURL=manifest.js.map
-;// CONCATENATED MODULE: external "stream"
-const external_stream_namespaceObject = __rspack_createRequire_require("stream");
-// EXTERNAL MODULE: external "util"
-var external_util_ = __webpack_require__(9023);
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+tool-cache@4.0.0/node_modules/@actions/tool-cache/lib/retry-helper.js
-var retry_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-/**
- * Internal class for retries
- */
-class RetryHelper {
-    constructor(maxAttempts, minSeconds, maxSeconds) {
-        if (maxAttempts < 1) {
-            throw new Error('max attempts should be greater than or equal to 1');
-        }
-        this.maxAttempts = maxAttempts;
-        this.minSeconds = Math.floor(minSeconds);
-        this.maxSeconds = Math.floor(maxSeconds);
-        if (this.minSeconds > this.maxSeconds) {
-            throw new Error('min seconds should be less than or equal to max seconds');
-        }
-    }
-    execute(action, isRetryable) {
-        return retry_helper_awaiter(this, void 0, void 0, function* () {
-            let attempt = 1;
-            while (attempt < this.maxAttempts) {
-                // Try
-                try {
-                    return yield action();
-                }
-                catch (err) {
-                    if (isRetryable && !isRetryable(err)) {
-                        throw err;
-                    }
-                    core_info(err.message);
-                }
-                // Sleep
-                const seconds = this.getSleepAmount();
-                core_info(`Waiting ${seconds} seconds before trying again`);
-                yield this.sleep(seconds);
-                attempt++;
-            }
-            // Last attempt
-            return yield action();
-        });
-    }
-    getSleepAmount() {
-        return (Math.floor(Math.random() * (this.maxSeconds - this.minSeconds + 1)) +
-            this.minSeconds);
-    }
-    sleep(seconds) {
-        return retry_helper_awaiter(this, void 0, void 0, function* () {
-            return new Promise(resolve => setTimeout(resolve, seconds * 1000));
-        });
-    }
-}
-//# sourceMappingURL=retry-helper.js.map
-;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+tool-cache@4.0.0/node_modules/@actions/tool-cache/lib/tool-cache.js
-var tool_cache_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class HTTPError extends Error {
-    constructor(httpStatusCode) {
-        super(`Unexpected HTTP response: ${httpStatusCode}`);
-        this.httpStatusCode = httpStatusCode;
-        Object.setPrototypeOf(this, new.target.prototype);
-    }
-}
-const tool_cache_IS_WINDOWS = process.platform === 'win32';
-const IS_MAC = process.platform === 'darwin';
-const tool_cache_userAgent = 'actions/tool-cache';
-/**
- * Download a tool from an url and stream it into a file
- *
- * @param url       url of tool to download
- * @param dest      path to download tool
- * @param auth      authorization header
- * @param headers   other headers
- * @returns         path to downloaded tool
- */
-function downloadTool(url, dest, auth, headers) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        dest = dest || external_path_.join(_getTempDirectory(), external_crypto_namespaceObject.randomUUID());
-        yield mkdirP(external_path_.dirname(dest));
-        core_debug(`Downloading ${url}`);
-        core_debug(`Destination ${dest}`);
-        const maxAttempts = 3;
-        const minSeconds = _getGlobal('TEST_DOWNLOAD_TOOL_RETRY_MIN_SECONDS', 10);
-        const maxSeconds = _getGlobal('TEST_DOWNLOAD_TOOL_RETRY_MAX_SECONDS', 20);
-        const retryHelper = new RetryHelper(maxAttempts, minSeconds, maxSeconds);
-        return yield retryHelper.execute(() => tool_cache_awaiter(this, void 0, void 0, function* () {
-            return yield downloadToolAttempt(url, dest || '', auth, headers);
-        }), (err) => {
-            if (err instanceof HTTPError && err.httpStatusCode) {
-                // Don't retry anything less than 500, except 408 Request Timeout and 429 Too Many Requests
-                if (err.httpStatusCode < 500 &&
-                    err.httpStatusCode !== 408 &&
-                    err.httpStatusCode !== 429) {
-                    return false;
-                }
-            }
-            // Otherwise retry
-            return true;
-        });
-    });
-}
-function downloadToolAttempt(url, dest, auth, headers) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        if (external_fs_namespaceObject.existsSync(dest)) {
-            throw new Error(`Destination file path ${dest} already exists`);
-        }
-        // Get the response headers
-        const http = new lib_HttpClient(tool_cache_userAgent, [], {
-            allowRetries: false
-        });
-        if (auth) {
-            core_debug('set auth');
-            if (headers === undefined) {
-                headers = {};
-            }
-            headers.authorization = auth;
-        }
-        const response = yield http.get(url, headers);
-        if (response.message.statusCode !== 200) {
-            const err = new HTTPError(response.message.statusCode);
-            core_debug(`Failed to download from "${url}". Code(${response.message.statusCode}) Message(${response.message.statusMessage})`);
-            throw err;
-        }
-        // Download the response body
-        const pipeline = external_util_.promisify(external_stream_namespaceObject.pipeline);
-        const responseMessageFactory = _getGlobal('TEST_DOWNLOAD_TOOL_RESPONSE_MESSAGE_FACTORY', () => response.message);
-        const readStream = responseMessageFactory();
-        let succeeded = false;
-        try {
-            yield pipeline(readStream, external_fs_namespaceObject.createWriteStream(dest));
-            core_debug('download complete');
-            succeeded = true;
-            return dest;
-        }
-        finally {
-            // Error, delete dest before retry
-            if (!succeeded) {
-                core_debug('download failed');
-                try {
-                    yield rmRF(dest);
-                }
-                catch (err) {
-                    core_debug(`Failed to delete '${dest}'. ${err.message}`);
-                }
-            }
-        }
-    });
-}
-/**
- * Extract a .7z file
- *
- * @param file     path to the .7z file
- * @param dest     destination directory. Optional.
- * @param _7zPath  path to 7zr.exe. Optional, for long path support. Most .7z archives do not have this
- * problem. If your .7z archive contains very long paths, you can pass the path to 7zr.exe which will
- * gracefully handle long paths. By default 7zdec.exe is used because it is a very small program and is
- * bundled with the tool lib. However it does not support long paths. 7zr.exe is the reduced command line
- * interface, it is smaller than the full command line interface, and it does support long paths. At the
- * time of this writing, it is freely available from the LZMA SDK that is available on the 7zip website.
- * Be sure to check the current license agreement. If 7zr.exe is bundled with your action, then the path
- * to 7zr.exe can be pass to this function.
- * @returns        path to the destination directory
- */
-function extract7z(file, dest, _7zPath) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        ok(tool_cache_IS_WINDOWS, 'extract7z() not supported on current OS');
-        ok(file, 'parameter "file" is required');
-        dest = yield _createExtractFolder(dest);
-        const originalCwd = process.cwd();
-        process.chdir(dest);
-        if (_7zPath) {
-            try {
-                const logLevel = core.isDebug() ? '-bb1' : '-bb0';
-                const args = [
-                    'x', // eXtract files with full paths
-                    logLevel, // -bb[0-3] : set output log level
-                    '-bd', // disable progress indicator
-                    '-sccUTF-8', // set charset for for console input/output
-                    file
-                ];
-                const options = {
-                    silent: true
-                };
-                yield exec(`"${_7zPath}"`, args, options);
-            }
-            finally {
-                process.chdir(originalCwd);
-            }
-        }
-        else {
-            const escapedScript = path
-                .join(__dirname, '..', 'scripts', 'Invoke-7zdec.ps1')
-                .replace(/'/g, "''")
-                .replace(/"|\n|\r/g, ''); // double-up single quotes, remove double quotes and newlines
-            const escapedFile = file.replace(/'/g, "''").replace(/"|\n|\r/g, '');
-            const escapedTarget = dest.replace(/'/g, "''").replace(/"|\n|\r/g, '');
-            const command = `& '${escapedScript}' -Source '${escapedFile}' -Target '${escapedTarget}'`;
-            const args = [
-                '-NoLogo',
-                '-Sta',
-                '-NoProfile',
-                '-NonInteractive',
-                '-ExecutionPolicy',
-                'Unrestricted',
-                '-Command',
-                command
-            ];
-            const options = {
-                silent: true
-            };
-            try {
-                const powershellPath = yield io.which('powershell', true);
-                yield exec(`"${powershellPath}"`, args, options);
-            }
-            finally {
-                process.chdir(originalCwd);
-            }
-        }
-        return dest;
-    });
-}
-/**
- * Extract a compressed tar archive
- *
- * @param file     path to the tar
- * @param dest     destination directory. Optional.
- * @param flags    flags for the tar command to use for extraction. Defaults to 'xz' (extracting gzipped tars). Optional.
- * @returns        path to the destination directory
- */
-function extractTar(file_1, dest_1) {
-    return tool_cache_awaiter(this, arguments, void 0, function* (file, dest, flags = 'xz') {
-        if (!file) {
-            throw new Error("parameter 'file' is required");
-        }
-        // Create dest
-        dest = yield _createExtractFolder(dest);
-        // Determine whether GNU tar
-        core_debug('Checking tar --version');
-        let versionOutput = '';
-        yield exec_exec('tar --version', [], {
-            ignoreReturnCode: true,
-            silent: true,
-            listeners: {
-                stdout: (data) => (versionOutput += data.toString()),
-                stderr: (data) => (versionOutput += data.toString())
-            }
-        });
-        core_debug(versionOutput.trim());
-        const isGnuTar = versionOutput.toUpperCase().includes('GNU TAR');
-        // Initialize args
-        let args;
-        if (flags instanceof Array) {
-            args = flags;
-        }
-        else {
-            args = [flags];
-        }
-        if (isDebug() && !flags.includes('v')) {
-            args.push('-v');
-        }
-        let destArg = dest;
-        let fileArg = file;
-        if (tool_cache_IS_WINDOWS && isGnuTar) {
-            args.push('--force-local');
-            destArg = dest.replace(/\\/g, '/');
-            // Technically only the dest needs to have `/` but for aesthetic consistency
-            // convert slashes in the file arg too.
-            fileArg = file.replace(/\\/g, '/');
-        }
-        if (isGnuTar) {
-            // Suppress warnings when using GNU tar to extract archives created by BSD tar
-            args.push('--warning=no-unknown-keyword');
-            args.push('--overwrite');
-        }
-        args.push('-C', destArg, '-f', fileArg);
-        yield exec_exec(`tar`, args);
-        return dest;
-    });
-}
-/**
- * Extract a xar compatible archive
- *
- * @param file     path to the archive
- * @param dest     destination directory. Optional.
- * @param flags    flags for the xar. Optional.
- * @returns        path to the destination directory
- */
-function extractXar(file_1, dest_1) {
-    return tool_cache_awaiter(this, arguments, void 0, function* (file, dest, flags = []) {
-        ok(IS_MAC, 'extractXar() not supported on current OS');
-        ok(file, 'parameter "file" is required');
-        dest = yield _createExtractFolder(dest);
-        let args;
-        if (flags instanceof Array) {
-            args = flags;
-        }
-        else {
-            args = [flags];
-        }
-        args.push('-x', '-C', dest, '-f', file);
-        if (core.isDebug()) {
-            args.push('-v');
-        }
-        const xarPath = yield io.which('xar', true);
-        yield exec(`"${xarPath}"`, _unique(args));
-        return dest;
-    });
-}
-/**
- * Extract a zip
- *
- * @param file     path to the zip
- * @param dest     destination directory. Optional.
- * @returns        path to the destination directory
- */
-function extractZip(file, dest) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        if (!file) {
-            throw new Error("parameter 'file' is required");
-        }
-        dest = yield _createExtractFolder(dest);
-        if (tool_cache_IS_WINDOWS) {
-            yield extractZipWin(file, dest);
-        }
-        else {
-            yield extractZipNix(file, dest);
-        }
-        return dest;
-    });
-}
-function extractZipWin(file, dest) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        // build the powershell command
-        const escapedFile = file.replace(/'/g, "''").replace(/"|\n|\r/g, ''); // double-up single quotes, remove double quotes and newlines
-        const escapedDest = dest.replace(/'/g, "''").replace(/"|\n|\r/g, '');
-        const pwshPath = yield which('pwsh', false);
-        //To match the file overwrite behavior on nix systems, we use the overwrite = true flag for ExtractToDirectory
-        //and the -Force flag for Expand-Archive as a fallback
-        if (pwshPath) {
-            //attempt to use pwsh with ExtractToDirectory, if this fails attempt Expand-Archive
-            const pwshCommand = [
-                `$ErrorActionPreference = 'Stop' ;`,
-                `try { Add-Type -AssemblyName System.IO.Compression.ZipFile } catch { } ;`,
-                `try { [System.IO.Compression.ZipFile]::ExtractToDirectory('${escapedFile}', '${escapedDest}', $true) }`,
-                `catch { if (($_.Exception.GetType().FullName -eq 'System.Management.Automation.MethodException') -or ($_.Exception.GetType().FullName -eq 'System.Management.Automation.RuntimeException') ){ Expand-Archive -LiteralPath '${escapedFile}' -DestinationPath '${escapedDest}' -Force } else { throw $_ } } ;`
-            ].join(' ');
-            const args = [
-                '-NoLogo',
-                '-NoProfile',
-                '-NonInteractive',
-                '-ExecutionPolicy',
-                'Unrestricted',
-                '-Command',
-                pwshCommand
-            ];
-            core_debug(`Using pwsh at path: ${pwshPath}`);
-            yield exec_exec(`"${pwshPath}"`, args);
-        }
-        else {
-            const powershellCommand = [
-                `$ErrorActionPreference = 'Stop' ;`,
-                `try { Add-Type -AssemblyName System.IO.Compression.FileSystem } catch { } ;`,
-                `if ((Get-Command -Name Expand-Archive -Module Microsoft.PowerShell.Archive -ErrorAction Ignore)) { Expand-Archive -LiteralPath '${escapedFile}' -DestinationPath '${escapedDest}' -Force }`,
-                `else {[System.IO.Compression.ZipFile]::ExtractToDirectory('${escapedFile}', '${escapedDest}', $true) }`
-            ].join(' ');
-            const args = [
-                '-NoLogo',
-                '-Sta',
-                '-NoProfile',
-                '-NonInteractive',
-                '-ExecutionPolicy',
-                'Unrestricted',
-                '-Command',
-                powershellCommand
-            ];
-            const powershellPath = yield which('powershell', true);
-            core_debug(`Using powershell at path: ${powershellPath}`);
-            yield exec_exec(`"${powershellPath}"`, args);
-        }
-    });
-}
-function extractZipNix(file, dest) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        const unzipPath = yield which('unzip', true);
-        const args = [file];
-        if (!isDebug()) {
-            args.unshift('-q');
-        }
-        args.unshift('-o'); //overwrite with -o, otherwise a prompt is shown which freezes the run
-        yield exec_exec(`"${unzipPath}"`, args, { cwd: dest });
-    });
-}
-/**
- * Caches a directory and installs it into the tool cacheDir
- *
- * @param sourceDir    the directory to cache into tools
- * @param tool          tool name
- * @param version       version of the tool.  semver format
- * @param arch          architecture of the tool.  Optional.  Defaults to machine architecture
- */
-function cacheDir(sourceDir, tool, version, arch) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        version = node_modules_semver.clean(version) || version;
-        arch = arch || external_os_namespaceObject.arch();
-        core_debug(`Caching tool ${tool} ${version} ${arch}`);
-        core_debug(`source dir: ${sourceDir}`);
-        if (!external_fs_namespaceObject.statSync(sourceDir).isDirectory()) {
-            throw new Error('sourceDir is not a directory');
-        }
-        // Create the tool dir
-        const destPath = yield _createToolPath(tool, version, arch);
-        // copy each child item. do not move. move can fail on Windows
-        // due to anti-virus software having an open handle on a file.
-        for (const itemName of external_fs_namespaceObject.readdirSync(sourceDir)) {
-            const s = external_path_.join(sourceDir, itemName);
-            yield io_cp(s, destPath, { recursive: true });
-        }
-        // write .complete
-        _completeToolPath(tool, version, arch);
-        return destPath;
-    });
-}
-/**
- * Caches a downloaded file (GUID) and installs it
- * into the tool cache with a given targetName
- *
- * @param sourceFile    the file to cache into tools.  Typically a result of downloadTool which is a guid.
- * @param targetFile    the name of the file name in the tools directory
- * @param tool          tool name
- * @param version       version of the tool.  semver format
- * @param arch          architecture of the tool.  Optional.  Defaults to machine architecture
- */
-function cacheFile(sourceFile, targetFile, tool, version, arch) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        version = semver.clean(version) || version;
-        arch = arch || os.arch();
-        core.debug(`Caching tool ${tool} ${version} ${arch}`);
-        core.debug(`source file: ${sourceFile}`);
-        if (!fs.statSync(sourceFile).isFile()) {
-            throw new Error('sourceFile is not a file');
-        }
-        // create the tool dir
-        const destFolder = yield _createToolPath(tool, version, arch);
-        // copy instead of move. move can fail on Windows due to
-        // anti-virus software having an open handle on a file.
-        const destPath = path.join(destFolder, targetFile);
-        core.debug(`destination file ${destPath}`);
-        yield io.cp(sourceFile, destPath);
-        // write .complete
-        _completeToolPath(tool, version, arch);
-        return destFolder;
-    });
-}
-/**
- * Finds the path to a tool version in the local installed tool cache
- *
- * @param toolName      name of the tool
- * @param versionSpec   version of the tool
- * @param arch          optional arch.  defaults to arch of computer
- */
-function find(toolName, versionSpec, arch) {
-    if (!toolName) {
-        throw new Error('toolName parameter is required');
-    }
-    if (!versionSpec) {
-        throw new Error('versionSpec parameter is required');
-    }
-    arch = arch || external_os_namespaceObject.arch();
-    // attempt to resolve an explicit version
-    if (!isExplicitVersion(versionSpec)) {
-        const localVersions = findAllVersions(toolName, arch);
-        const match = evaluateVersions(localVersions, versionSpec);
-        versionSpec = match;
-    }
-    // check for the explicit version in the cache
-    let toolPath = '';
-    if (versionSpec) {
-        versionSpec = node_modules_semver.clean(versionSpec) || '';
-        const cachePath = external_path_.join(_getCacheDirectory(), toolName, versionSpec, arch);
-        core_debug(`checking cache: ${cachePath}`);
-        if (external_fs_namespaceObject.existsSync(cachePath) && external_fs_namespaceObject.existsSync(`${cachePath}.complete`)) {
-            core_debug(`Found tool in cache ${toolName} ${versionSpec} ${arch}`);
-            toolPath = cachePath;
-        }
-        else {
-            core_debug('not found');
-        }
-    }
-    return toolPath;
-}
-/**
- * Finds the paths to all versions of a tool that are installed in the local tool cache
- *
- * @param toolName  name of the tool
- * @param arch      optional arch.  defaults to arch of computer
- */
-function findAllVersions(toolName, arch) {
-    const versions = [];
-    arch = arch || external_os_namespaceObject.arch();
-    const toolPath = external_path_.join(_getCacheDirectory(), toolName);
-    if (external_fs_namespaceObject.existsSync(toolPath)) {
-        const children = external_fs_namespaceObject.readdirSync(toolPath);
-        for (const child of children) {
-            if (isExplicitVersion(child)) {
-                const fullPath = external_path_.join(toolPath, child, arch || '');
-                if (external_fs_namespaceObject.existsSync(fullPath) && external_fs_namespaceObject.existsSync(`${fullPath}.complete`)) {
-                    versions.push(child);
-                }
-            }
-        }
-    }
-    return versions;
-}
-function getManifestFromRepo(owner_1, repo_1, auth_1) {
-    return tool_cache_awaiter(this, arguments, void 0, function* (owner, repo, auth, branch = 'master') {
-        let releases = [];
-        const treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}`;
-        const http = new httpm.HttpClient('tool-cache');
-        const headers = {};
-        if (auth) {
-            core.debug('set auth');
-            headers.authorization = auth;
-        }
-        const response = yield http.getJson(treeUrl, headers);
-        if (!response.result) {
-            return releases;
-        }
-        let manifestUrl = '';
-        for (const item of response.result.tree) {
-            if (item.path === 'versions-manifest.json') {
-                manifestUrl = item.url;
-                break;
-            }
-        }
-        headers['accept'] = 'application/vnd.github.VERSION.raw';
-        let versionsRaw = yield (yield http.get(manifestUrl, headers)).readBody();
-        if (versionsRaw) {
-            // shouldn't be needed but protects against invalid json saved with BOM
-            versionsRaw = versionsRaw.replace(/^\uFEFF/, '');
-            try {
-                releases = JSON.parse(versionsRaw);
-            }
-            catch (_a) {
-                core.debug('Invalid json');
-            }
-        }
-        return releases;
-    });
-}
-function findFromManifest(versionSpec_1, stable_1, manifest_1) {
-    return tool_cache_awaiter(this, arguments, void 0, function* (versionSpec, stable, manifest, archFilter = os.arch()) {
-        // wrap the internal impl
-        const match = yield mm._findMatch(versionSpec, stable, manifest, archFilter);
-        return match;
-    });
-}
-function _createExtractFolder(dest) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        if (!dest) {
-            // create a temp dir
-            dest = external_path_.join(_getTempDirectory(), external_crypto_namespaceObject.randomUUID());
-        }
-        yield mkdirP(dest);
-        return dest;
-    });
-}
-function _createToolPath(tool, version, arch) {
-    return tool_cache_awaiter(this, void 0, void 0, function* () {
-        const folderPath = external_path_.join(_getCacheDirectory(), tool, node_modules_semver.clean(version) || version, arch || '');
-        core_debug(`destination ${folderPath}`);
-        const markerPath = `${folderPath}.complete`;
-        yield rmRF(folderPath);
-        yield rmRF(markerPath);
-        yield mkdirP(folderPath);
-        return folderPath;
-    });
-}
-function _completeToolPath(tool, version, arch) {
-    const folderPath = external_path_.join(_getCacheDirectory(), tool, node_modules_semver.clean(version) || version, arch || '');
-    const markerPath = `${folderPath}.complete`;
-    external_fs_namespaceObject.writeFileSync(markerPath, '');
-    core_debug('finished caching tool');
-}
-/**
- * Check if version string is explicit
- *
- * @param versionSpec      version string to check
- */
-function isExplicitVersion(versionSpec) {
-    const c = node_modules_semver.clean(versionSpec) || '';
-    core_debug(`isExplicit: ${c}`);
-    const valid = node_modules_semver.valid(c) != null;
-    core_debug(`explicit? ${valid}`);
-    return valid;
-}
-/**
- * Get the highest satisfiying semantic version in `versions` which satisfies `versionSpec`
- *
- * @param versions        array of versions to evaluate
- * @param versionSpec     semantic version spec to satisfy
- */
-function evaluateVersions(versions, versionSpec) {
-    let version = '';
-    core_debug(`evaluating ${versions.length} versions`);
-    versions = versions.sort((a, b) => {
-        if (node_modules_semver.gt(a, b)) {
-            return 1;
-        }
-        return -1;
-    });
-    for (let i = versions.length - 1; i >= 0; i--) {
-        const potential = versions[i];
-        const satisfied = node_modules_semver.satisfies(potential, versionSpec);
-        if (satisfied) {
-            version = potential;
-            break;
-        }
-    }
-    if (version) {
-        core_debug(`matched: ${version}`);
-    }
-    else {
-        core_debug('match not found');
-    }
-    return version;
-}
-/**
- * Gets RUNNER_TOOL_CACHE
- */
-function _getCacheDirectory() {
-    const cacheDirectory = process.env['RUNNER_TOOL_CACHE'] || '';
-    (0,external_assert_.ok)(cacheDirectory, 'Expected RUNNER_TOOL_CACHE to be defined');
-    return cacheDirectory;
-}
-/**
- * Gets RUNNER_TEMP
- */
-function _getTempDirectory() {
-    const tempDirectory = process.env['RUNNER_TEMP'] || '';
-    (0,external_assert_.ok)(tempDirectory, 'Expected RUNNER_TEMP to be defined');
-    return tempDirectory;
-}
-/**
- * Gets a global variable
- */
-function _getGlobal(key, defaultValue) {
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const value = global[key];
-    /* eslint-enable @typescript-eslint/no-explicit-any */
-    return value !== undefined ? value : defaultValue;
-}
-/**
- * Returns an array of unique values.
- * @param values Values to make unique.
- */
-function _unique(values) {
-    return Array.from(new Set(values));
-}
-//# sourceMappingURL=tool-cache.js.map
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+glob@0.6.1/node_modules/@actions/glob/lib/internal-glob-options-helper.js
 
 /**
@@ -38708,6 +37904,10 @@ class DefaultGlobber {
     }
 }
 //# sourceMappingURL=internal-globber.js.map
+;// CONCATENATED MODULE: external "stream"
+const external_stream_namespaceObject = __rspack_createRequire_require("stream");
+// EXTERNAL MODULE: external "util"
+var external_util_ = __webpack_require__(9023);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+glob@0.6.1/node_modules/@actions/glob/lib/internal-hash-files.js
 var internal_hash_files_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -38827,6 +38027,8 @@ function glob_hashFiles(patterns_1) {
     });
 }
 //# sourceMappingURL=glob.js.map
+// EXTERNAL MODULE: ./node_modules/.pnpm/semver@7.8.5/node_modules/semver/index.js
+var semver = __webpack_require__(3115);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+cache@6.2.0/node_modules/@actions/cache/lib/internal/constants.js
 var constants_CacheFilename;
 (function (CacheFilename) {
@@ -38853,7 +38055,7 @@ const DefaultRetryDelay = 5000;
 // Socket timeout in milliseconds during download.  If no traffic is received
 // over the socket during this period, the socket is destroyed and the download
 // is aborted.
-const SocketTimeout = 5000;
+const constants_SocketTimeout = 5000;
 // The default path of GNUtar on hosted Windows runners
 const GnuTarPathOnWindows = `${process.env['PROGRAMFILES']}\\Git\\usr\\bin\\tar.exe`;
 // The default path of BSDtar on hosted Windows runners
@@ -38864,7 +38066,7 @@ const CacheFileSizeLimit = (/* unused pure expression or super */ null && (10 * 
 // Prefix the cache backend embeds in a read-denial message (v2 twirp
 // GetCacheEntryDownloadURL error or the GHES v1 `_apis/artifactcache` 403 body).
 // Shared so cache.ts and cacheHttpClient.ts match the same contract value.
-const CacheReadDeniedMessagePrefix = 'cache read denied:';
+const constants_CacheReadDeniedMessagePrefix = 'cache read denied:';
 //# sourceMappingURL=constants.js.map
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+cache@6.2.0/node_modules/@actions/cache/lib/internal/cacheUtils.js
 var cacheUtils_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -38992,7 +38194,7 @@ function getVersion(app_1) {
 function getCompressionMethod() {
     return cacheUtils_awaiter(this, void 0, void 0, function* () {
         const versionOutput = yield getVersion('zstd', ['--quiet']);
-        const version = node_modules_semver.clean(versionOutput);
+        const version = semver.clean(versionOutput);
         core_debug(`zstd version: ${version}`);
         if (versionOutput === '') {
             return constants_CompressionMethod.Gzip;
@@ -42985,6 +42187,8 @@ function policies_formDataPolicy_formDataPolicy() {
     return formDataPolicy_formDataPolicy();
 }
 //# sourceMappingURL=formDataPolicy.js.map
+// EXTERNAL MODULE: external "node:crypto"
+var external_node_crypto_ = __webpack_require__(7598);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@typespec+ts-http-runtime@0.3.9/node_modules/@typespec/ts-http-runtime/dist/esm/util/sha256.js
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
@@ -82119,7 +81323,7 @@ class BlobClient extends StorageClient_StorageClient {
      *
      */
     getBlockBlobClient() {
-        return new BlockBlobClient(this.url, this.pipeline, this.blobClientConfig);
+        return new Clients_BlockBlobClient(this.url, this.pipeline, this.blobClientConfig);
     }
     /**
      * Creates a PageBlobClient object.
@@ -83433,7 +82637,7 @@ class AppendBlobClient extends BlobClient {
 /**
  * BlockBlobClient defines a set of operations applicable to block blobs.
  */
-class BlockBlobClient extends BlobClient {
+class Clients_BlockBlobClient extends BlobClient {
     /**
      * blobContext provided by protocol layer.
      *
@@ -83527,7 +82731,7 @@ class BlockBlobClient extends BlobClient {
      * @returns A new BlockBlobClient object identical to the source but with the specified snapshot timestamp.
      */
     withSnapshot(snapshot) {
-        return new BlockBlobClient(utils_common_setURLParameter(this.url, utils_constants_URLConstants.Parameters.SNAPSHOT, snapshot.length === 0 ? undefined : snapshot), this.pipeline, this.blobClientConfig);
+        return new Clients_BlockBlobClient(utils_common_setURLParameter(this.url, utils_constants_URLConstants.Parameters.SNAPSHOT, snapshot.length === 0 ? undefined : snapshot), this.pipeline, this.blobClientConfig);
     }
     /**
      * ONLY AVAILABLE IN NODE.JS RUNTIME.
@@ -85753,7 +84957,7 @@ class ContainerClient extends StorageClient_StorageClient {
      * ```
      */
     getBlockBlobClient(blobName) {
-        return new BlockBlobClient(utils_common_appendToURLPath(this.url, utils_common_EscapePath(blobName)), this.pipeline, this.blobClientConfig);
+        return new Clients_BlockBlobClient(utils_common_appendToURLPath(this.url, utils_common_EscapePath(blobName)), this.pipeline, this.blobClientConfig);
     }
     /**
      * Creates a {@link PageBlobClient}
@@ -88269,7 +87473,7 @@ var requestUtils_awaiter = (undefined && undefined.__awaiter) || function (thisA
 
 
 
-function isSuccessStatusCode(statusCode) {
+function requestUtils_isSuccessStatusCode(statusCode) {
     if (!statusCode) {
         return false;
     }
@@ -88336,13 +87540,13 @@ function retry(name_1, method_1, getStatusCode_1) {
         throw Error(`${name} failed: ${errorMessage}`);
     });
 }
-function retryTypedResponse(name_1, method_1) {
+function requestUtils_retryTypedResponse(name_1, method_1) {
     return requestUtils_awaiter(this, arguments, void 0, function* (name, method, maxAttempts = (/* inlined export .DefaultRetryAttempts */2), delay = (/* inlined export .DefaultRetryDelay */5000)) {
         return yield retry(name, method, (response) => response.statusCode, maxAttempts, delay, 
         // If the error object contains the statusCode property, extract it and return
         // an TypedResponse<T> so it can be processed by the retry logic.
         (error) => {
-            if (error instanceof HttpClientError) {
+            if (error instanceof lib_HttpClientError) {
                 return {
                     statusCode: error.statusCode,
                     result: null,
@@ -88356,7 +87560,7 @@ function retryTypedResponse(name_1, method_1) {
         });
     });
 }
-function retryHttpClientResponse(name_1, method_1) {
+function requestUtils_retryHttpClientResponse(name_1, method_1) {
     return requestUtils_awaiter(this, arguments, void 0, function* (name, method, maxAttempts = (/* inlined export .DefaultRetryAttempts */2), delay = (/* inlined export .DefaultRetryDelay */5000)) {
         return yield retry(name, method, (response) => response.message.statusCode, maxAttempts, delay);
     });
@@ -88390,7 +87594,7 @@ var downloadUtils_awaiter = (undefined && undefined.__awaiter) || function (this
  */
 function pipeResponseToStream(response, output) {
     return downloadUtils_awaiter(this, void 0, void 0, function* () {
-        const pipeline = external_util_.promisify(external_stream_namespaceObject.pipeline);
+        const pipeline = util.promisify(stream.pipeline);
         yield pipeline(response.message, output);
     });
 }
@@ -88418,7 +87622,7 @@ class DownloadProgress {
         this.segmentIndex = this.segmentIndex + 1;
         this.segmentSize = segmentSize;
         this.receivedBytes = 0;
-        core_debug(`Downloading segment at offset ${this.segmentOffset} with length ${this.segmentSize}...`);
+        core.debug(`Downloading segment at offset ${this.segmentOffset} with length ${this.segmentSize}...`);
     }
     /**
      * Sets the number of bytes received for the current segment.
@@ -88454,7 +87658,7 @@ class DownloadProgress {
         const downloadSpeed = (transferredBytes /
             (1024 * 1024) /
             (elapsedTime / 1000)).toFixed(1);
-        core_info(`Received ${transferredBytes} of ${this.contentLength} (${percentage}%), ${downloadSpeed} MBs/sec`);
+        core.info(`Received ${transferredBytes} of ${this.contentLength} (${percentage}%), ${downloadSpeed} MBs/sec`);
         if (this.isDone()) {
             this.displayedComplete = true;
         }
@@ -88500,28 +87704,28 @@ class DownloadProgress {
  * @param archiveLocation the URL for the cache
  * @param archivePath the local path where the cache is saved
  */
-function downloadCacheHttpClient(archiveLocation, archivePath) {
+function downloadUtils_downloadCacheHttpClient(archiveLocation, archivePath) {
     return downloadUtils_awaiter(this, void 0, void 0, function* () {
-        const writeStream = external_fs_namespaceObject.createWriteStream(archivePath);
-        const httpClient = new lib_HttpClient('actions/cache');
+        const writeStream = fs.createWriteStream(archivePath);
+        const httpClient = new HttpClient('actions/cache');
         const downloadResponse = yield retryHttpClientResponse('downloadCache', () => downloadUtils_awaiter(this, void 0, void 0, function* () { return httpClient.get(archiveLocation); }));
         // Abort download if no traffic received over the socket.
-        downloadResponse.message.socket.setTimeout((/* inlined export .SocketTimeout */5000), () => {
+        downloadResponse.message.socket.setTimeout(SocketTimeout, () => {
             downloadResponse.message.destroy();
-            core_debug(`Aborting download, socket timed out after ${(/* inlined export .SocketTimeout */5000)} ms`);
+            core.debug(`Aborting download, socket timed out after ${SocketTimeout} ms`);
         });
         yield pipeResponseToStream(downloadResponse, writeStream);
         // Validate download size.
         const contentLengthHeader = downloadResponse.message.headers['content-length'];
         if (contentLengthHeader) {
             const expectedLength = parseInt(contentLengthHeader);
-            const actualLength = getArchiveFileSizeInBytes(archivePath);
+            const actualLength = utils.getArchiveFileSizeInBytes(archivePath);
             if (actualLength !== expectedLength) {
                 throw new Error(`Incomplete download. Expected file size: ${expectedLength}, actual file size: ${actualLength}`);
             }
         }
         else {
-            core_debug('Unable to validate download, no Content-Length header');
+            core.debug('Unable to validate download, no Content-Length header');
         }
     });
 }
@@ -88531,11 +87735,11 @@ function downloadCacheHttpClient(archiveLocation, archivePath) {
  * @param archiveLocation the URL for the cache
  * @param archivePath the local path where the cache is saved
  */
-function downloadCacheHttpClientConcurrent(archiveLocation, archivePath, options) {
+function downloadUtils_downloadCacheHttpClientConcurrent(archiveLocation, archivePath, options) {
     return downloadUtils_awaiter(this, void 0, void 0, function* () {
         var _a;
-        const archiveDescriptor = yield external_fs_namespaceObject.promises.open(archivePath, 'w');
-        const httpClient = new lib_HttpClient('actions/cache', undefined, {
+        const archiveDescriptor = yield fs.promises.open(archivePath, 'w');
+        const httpClient = new HttpClient('actions/cache', undefined, {
             socketTimeout: options.timeoutInMs,
             keepAlive: true
         });
@@ -88641,7 +87845,7 @@ function downloadSegment(httpClient, archiveLocation, offset, count) {
  * @param archivePath the local path where the cache is saved
  * @param options the download options with the defaults set
  */
-function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
+function downloadUtils_downloadCacheStorageSDK(archiveLocation, archivePath, options) {
     return downloadUtils_awaiter(this, void 0, void 0, function* () {
         var _a;
         const client = new BlockBlobClient(archiveLocation, undefined, {
@@ -88656,8 +87860,8 @@ function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
         if (contentLength < 0) {
             // We should never hit this condition, but just in case fall back to downloading the
             // file as one large stream
-            core_debug('Unable to determine content length, downloading file with http-client...');
-            yield downloadCacheHttpClient(archiveLocation, archivePath);
+            core.debug('Unable to determine content length, downloading file with http-client...');
+            yield downloadUtils_downloadCacheHttpClient(archiveLocation, archivePath);
         }
         else {
             // Use downloadToBuffer for faster downloads, since internally it splits the
@@ -88667,9 +87871,9 @@ function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
             // on 64-bit systems), split the download into multiple segments
             // ~2 GB = 2147483647, beyond this, we start getting out of range error. So, capping it accordingly.
             // Updated segment size to 128MB = 134217728 bytes, to complete a segment faster and fail fast
-            const maxSegmentSize = Math.min(134217728, external_buffer_namespaceObject.constants.MAX_LENGTH);
+            const maxSegmentSize = Math.min(134217728, buffer.constants.MAX_LENGTH);
             const downloadProgress = new DownloadProgress(contentLength);
-            const fd = external_fs_namespaceObject.openSync(archivePath, 'w');
+            const fd = fs.openSync(archivePath, 'w');
             try {
                 downloadProgress.startDisplayTimer();
                 const controller = new AbortController();
@@ -88688,13 +87892,13 @@ function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
                         throw new Error('Aborting cache download as the download time exceeded the timeout.');
                     }
                     else if (Buffer.isBuffer(result)) {
-                        external_fs_namespaceObject.writeFileSync(fd, result);
+                        fs.writeFileSync(fd, result);
                     }
                 }
             }
             finally {
                 downloadProgress.stopDisplayTimer();
-                external_fs_namespaceObject.closeSync(fd);
+                fs.closeSync(fd);
             }
         }
     });
@@ -88756,7 +87960,7 @@ function getUploadOptions(copy) {
  *
  * @param copy the original download options
  */
-function getDownloadOptions(copy) {
+function options_getDownloadOptions(copy) {
     const result = {
         useAzureSdk: false,
         concurrentBlobDownloads: true,
@@ -88791,12 +87995,12 @@ function getDownloadOptions(copy) {
         isFinite(Number(segmentDownloadTimeoutMins))) {
         result.segmentTimeoutInMs = Number(segmentDownloadTimeoutMins) * 60 * 1000;
     }
-    core_debug(`Use Azure SDK: ${result.useAzureSdk}`);
-    core_debug(`Download concurrency: ${result.downloadConcurrency}`);
-    core_debug(`Request timeout (ms): ${result.timeoutInMs}`);
-    core_debug(`Cache segment download timeout mins env var: ${process.env['SEGMENT_DOWNLOAD_TIMEOUT_MINS']}`);
-    core_debug(`Segment download timeout (ms): ${result.segmentTimeoutInMs}`);
-    core_debug(`Lookup only: ${result.lookupOnly}`);
+    core.debug(`Use Azure SDK: ${result.useAzureSdk}`);
+    core.debug(`Download concurrency: ${result.downloadConcurrency}`);
+    core.debug(`Request timeout (ms): ${result.timeoutInMs}`);
+    core.debug(`Cache segment download timeout mins env var: ${process.env['SEGMENT_DOWNLOAD_TIMEOUT_MINS']}`);
+    core.debug(`Segment download timeout (ms): ${result.segmentTimeoutInMs}`);
+    core.debug(`Lookup only: ${result.lookupOnly}`);
     return result;
 }
 //# sourceMappingURL=options.js.map
@@ -88820,11 +88024,11 @@ function config_getCacheServiceVersion() {
 // write-only}, none = neither.
 const KNOWN_CACHE_MODES = ['none', 'read', 'write', 'write-only'];
 // The effective cache-mode exported by the runner, or '' when not set.
-function getCacheMode() {
+function config_getCacheMode() {
     return (process.env['ACTIONS_CACHE_MODE'] || '').trim().toLowerCase();
 }
 // Unset or unrecognized modes are permissive so behavior matches today.
-function isCacheReadable(mode) {
+function config_isCacheReadable(mode) {
     if (!KNOWN_CACHE_MODES.includes(mode))
         return true;
     return mode === 'read' || mode === 'write';
@@ -88913,13 +88117,13 @@ function getCacheEntry(keys, paths, options) {
     return cacheHttpClient_awaiter(this, void 0, void 0, function* () {
         var _a;
         const httpClient = createHttpClient();
-        const version = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
+        const version = utils.getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
         const resource = `cache?keys=${encodeURIComponent(keys.join(','))}&version=${version}`;
         const response = yield retryTypedResponse('getCacheEntry', () => cacheHttpClient_awaiter(this, void 0, void 0, function* () { return httpClient.getJson(getCacheApiUrl(resource)); }));
         // Cache not found
         if (response.statusCode === 204) {
             // List cache for primary key only if cache miss occurs
-            if (isDebug()) {
+            if (core.isDebug()) {
                 yield printCachesListForDiagnostics(keys[0], httpClient, version);
             }
             return null;
@@ -88939,9 +88143,9 @@ function getCacheEntry(keys, paths, options) {
             // Cache achiveLocation not found. This should never happen, and hence bail out.
             throw new Error('Cache not found.');
         }
-        core_setSecret(cacheDownloadUrl);
-        core_debug(`Cache Result:`);
-        core_debug(JSON.stringify(cacheResult));
+        core.setSecret(cacheDownloadUrl);
+        core.debug(`Cache Result:`);
+        core.debug(JSON.stringify(cacheResult));
         return cacheResult;
     });
 }
@@ -88953,9 +88157,9 @@ function printCachesListForDiagnostics(key, httpClient, version) {
             const cacheListResult = response.result;
             const totalCount = cacheListResult === null || cacheListResult === void 0 ? void 0 : cacheListResult.totalCount;
             if (totalCount && totalCount > 0) {
-                core_debug(`No matching cache found for cache key '${key}', version '${version} and scope ${process.env['GITHUB_REF']}. There exist one or more cache(s) with similar key but they have different version or scope. See more info on cache matching here: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#matching-a-cache-key \nOther caches with similar key:`);
+                core.debug(`No matching cache found for cache key '${key}', version '${version} and scope ${process.env['GITHUB_REF']}. There exist one or more cache(s) with similar key but they have different version or scope. See more info on cache matching here: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#matching-a-cache-key \nOther caches with similar key:`);
                 for (const cacheEntry of (cacheListResult === null || cacheListResult === void 0 ? void 0 : cacheListResult.artifactCaches) || []) {
-                    core_debug(`Cache Key: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheKey}, Cache Version: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheVersion}, Cache Scope: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.scope}, Cache Created: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.creationTime}`);
+                    core.debug(`Cache Key: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheKey}, Cache Version: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheVersion}, Cache Scope: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.scope}, Cache Created: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.creationTime}`);
                 }
             }
         }
@@ -88963,7 +88167,7 @@ function printCachesListForDiagnostics(key, httpClient, version) {
 }
 function downloadCache(archiveLocation, archivePath, options) {
     return cacheHttpClient_awaiter(this, void 0, void 0, function* () {
-        const archiveUrl = new external_url_.URL(archiveLocation);
+        const archiveUrl = new URL(archiveLocation);
         const downloadOptions = getDownloadOptions(options);
         if (archiveUrl.hostname.endsWith('.blob.core.windows.net')) {
             if (downloadOptions.useAzureSdk) {
@@ -88994,7 +88198,7 @@ function reserveCache(key, paths, options) {
             version,
             cacheSize: options === null || options === void 0 ? void 0 : options.cacheSize
         };
-        const response = yield retryTypedResponse('reserveCache', () => cacheHttpClient_awaiter(this, void 0, void 0, function* () {
+        const response = yield requestUtils_retryTypedResponse('reserveCache', () => cacheHttpClient_awaiter(this, void 0, void 0, function* () {
             return httpClient.postJson(getCacheApiUrl('caches'), reserveCacheRequest);
         }));
         return response;
@@ -89015,10 +88219,10 @@ function uploadChunk(httpClient, resourceUrl, openStream, start, end) {
             'Content-Type': 'application/octet-stream',
             'Content-Range': getContentRange(start, end)
         };
-        const uploadChunkResponse = yield retryHttpClientResponse(`uploadChunk (start: ${start}, end: ${end})`, () => cacheHttpClient_awaiter(this, void 0, void 0, function* () {
+        const uploadChunkResponse = yield requestUtils_retryHttpClientResponse(`uploadChunk (start: ${start}, end: ${end})`, () => cacheHttpClient_awaiter(this, void 0, void 0, function* () {
             return httpClient.sendStream('PATCH', resourceUrl, openStream(), additionalHeaders);
         }));
-        if (!isSuccessStatusCode(uploadChunkResponse.message.statusCode)) {
+        if (!requestUtils_isSuccessStatusCode(uploadChunkResponse.message.statusCode)) {
             throw new Error(`Cache service responded with ${uploadChunkResponse.message.statusCode} during upload chunk.`);
         }
     });
@@ -89063,7 +88267,7 @@ function uploadFile(httpClient, cacheId, archivePath, options) {
 function commitCache(httpClient, cacheId, filesize) {
     return cacheHttpClient_awaiter(this, void 0, void 0, function* () {
         const commitCacheRequest = { size: filesize };
-        return yield retryTypedResponse('commitCache', () => cacheHttpClient_awaiter(this, void 0, void 0, function* () {
+        return yield requestUtils_retryTypedResponse('commitCache', () => cacheHttpClient_awaiter(this, void 0, void 0, function* () {
             return httpClient.postJson(getCacheApiUrl(`caches/${cacheId.toString()}`), commitCacheRequest);
         }));
     });
@@ -89087,7 +88291,7 @@ function saveCache(cacheId, archivePath, signedUploadURL, options) {
             const cacheSize = getArchiveFileSizeInBytes(archivePath);
             core_info(`Cache Size: ~${Math.round(cacheSize / (1024 * 1024))} MB (${cacheSize} B)`);
             const commitCacheResponse = yield commitCache(httpClient, cacheId, cacheSize);
-            if (!isSuccessStatusCode(commitCacheResponse.statusCode)) {
+            if (!requestUtils_isSuccessStatusCode(commitCacheResponse.statusCode)) {
                 throw new Error(`Cache service responded with ${commitCacheResponse.statusCode} during commit cache.`);
             }
             core_info('Cache saved successfully');
@@ -93344,7 +92548,7 @@ function execCommands(commands, cwd) {
     });
 }
 // List the contents of a tar
-function listTar(archivePath, compressionMethod) {
+function tar_listTar(archivePath, compressionMethod) {
     return tar_awaiter(this, void 0, void 0, function* () {
         const commands = yield getCommands(compressionMethod, 'list', archivePath);
         yield execCommands(commands);
@@ -93355,7 +92559,7 @@ function tar_extractTar(archivePath, compressionMethod) {
     return tar_awaiter(this, void 0, void 0, function* () {
         // Create directory to extract tar into
         const workingDirectory = getWorkingDirectory();
-        yield mkdirP(workingDirectory);
+        yield io.mkdirP(workingDirectory);
         const commands = yield getCommands(compressionMethod, 'extract', archivePath);
         yield execCommands(commands);
     });
@@ -93435,7 +92639,7 @@ class CacheWriteDeniedError extends ReserveCacheError {
 }
 // Re-exported from constants so consumers keep referencing it here; the shared
 // value also drives detection in cacheHttpClient without duplicating the string.
-const CACHE_READ_DENIED_PREFIX = CacheReadDeniedMessagePrefix;
+const CACHE_READ_DENIED_PREFIX = (/* unused pure expression or super */ null && (CacheReadDeniedMessagePrefix));
 // Raised when the cache backend denies a download URL because the run's token
 // has no readable cache scopes. Caching is best-effort, so restoreCache logs a
 // warning and reports a cache miss rather than rethrowing this.
@@ -93497,13 +92701,13 @@ function isFeatureAvailable() {
  */
 function restoreCache(paths_1, primaryKey_1, restoreKeys_1, options_1) {
     return cache_awaiter(this, arguments, void 0, function* (paths, primaryKey, restoreKeys, options, enableCrossOsArchive = false) {
-        const cacheServiceVersion = config_getCacheServiceVersion();
-        core_debug(`Cache service version: ${cacheServiceVersion}`);
+        const cacheServiceVersion = getCacheServiceVersion();
+        core.debug(`Cache service version: ${cacheServiceVersion}`);
         checkPaths(paths);
         const cacheMode = getCacheMode();
         if (!isCacheReadable(cacheMode)) {
-            core_info(`Cache restore skipped: the effective cache-mode '${cacheMode}' does not permit reads.`);
-            core_debug(`Skipped restore for paths [${paths.join(', ')}] with primary key '${primaryKey}'.`);
+            core.info(`Cache restore skipped: the effective cache-mode '${cacheMode}' does not permit reads.`);
+            core.debug(`Skipped restore for paths [${paths.join(', ')}] with primary key '${primaryKey}'.`);
             return undefined;
         }
         switch (cacheServiceVersion) {
@@ -93530,21 +92734,21 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
         var _a;
         restoreKeys = restoreKeys || [];
         const keys = [primaryKey, ...restoreKeys];
-        core_debug('Resolved Keys:');
-        core_debug(JSON.stringify(keys));
+        core.debug('Resolved Keys:');
+        core.debug(JSON.stringify(keys));
         if (keys.length > 10) {
             throw new ValidationError(`Key Validation Error: Keys are limited to a maximum of 10.`);
         }
         for (const key of keys) {
             checkKey(key);
         }
-        const compressionMethod = yield getCompressionMethod();
+        const compressionMethod = yield utils.getCompressionMethod();
         let archivePath = '';
         try {
             // path are needed to compute version
             let cacheEntry;
             try {
-                cacheEntry = yield getCacheEntry(keys, paths, {
+                cacheEntry = yield cacheHttpClient.getCacheEntry(keys, paths, {
                     compressionMethod,
                     enableCrossOsArchive
                 });
@@ -93567,20 +92771,20 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 return undefined;
             }
             if (options === null || options === void 0 ? void 0 : options.lookupOnly) {
-                core_info('Lookup only - skipping download');
+                core.info('Lookup only - skipping download');
                 return cacheEntry.cacheKey;
             }
-            archivePath = external_path_.join(yield createTempDirectory(), getCacheFileName(compressionMethod));
-            core_debug(`Archive Path: ${archivePath}`);
+            archivePath = path.join(yield utils.createTempDirectory(), utils.getCacheFileName(compressionMethod));
+            core.debug(`Archive Path: ${archivePath}`);
             // Download the cache from the cache entry
-            yield downloadCache(cacheEntry.archiveLocation, archivePath, options);
-            if (isDebug()) {
+            yield cacheHttpClient.downloadCache(cacheEntry.archiveLocation, archivePath, options);
+            if (core.isDebug()) {
                 yield listTar(archivePath, compressionMethod);
             }
-            const archiveFileSize = getArchiveFileSizeInBytes(archivePath);
-            core_info(`Cache Size: ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B)`);
-            yield tar_extractTar(archivePath, compressionMethod);
-            core_info('Cache restored successfully');
+            const archiveFileSize = utils.getArchiveFileSizeInBytes(archivePath);
+            core.info(`Cache Size: ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B)`);
+            yield extractTar(archivePath, compressionMethod);
+            core.info('Cache restored successfully');
             return cacheEntry.cacheKey;
         }
         catch (error) {
@@ -93596,20 +92800,20 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
-                    core_error(`Failed to restore: ${error.message}`);
+                    core.error(`Failed to restore: ${error.message}`);
                 }
                 else {
-                    core_warning(`Failed to restore: ${error.message}`);
+                    core.warning(`Failed to restore: ${error.message}`);
                 }
             }
         }
         finally {
             // Try to delete the archive to save space
             try {
-                yield unlinkFile(archivePath);
+                yield utils.unlinkFile(archivePath);
             }
             catch (error) {
-                core_debug(`Failed to delete archive: ${error}`);
+                core.debug(`Failed to delete archive: ${error}`);
             }
         }
         return undefined;
@@ -93632,8 +92836,8 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
         options = Object.assign(Object.assign({}, options), { useAzureSdk: true });
         restoreKeys = restoreKeys || [];
         const keys = [primaryKey, ...restoreKeys];
-        core_debug('Resolved Keys:');
-        core_debug(JSON.stringify(keys));
+        core.debug('Resolved Keys:');
+        core.debug(JSON.stringify(keys));
         if (keys.length > 10) {
             throw new ValidationError(`Key Validation Error: Keys are limited to a maximum of 10.`);
         }
@@ -93642,12 +92846,12 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
         }
         let archivePath = '';
         try {
-            const twirpClient = internalCacheTwirpClient();
-            const compressionMethod = yield getCompressionMethod();
+            const twirpClient = cacheTwirpClient.internalCacheTwirpClient();
+            const compressionMethod = yield utils.getCompressionMethod();
             const request = {
                 key: primaryKey,
                 restoreKeys,
-                version: getCacheVersion(paths, compressionMethod, enableCrossOsArchive)
+                version: utils.getCacheVersion(paths, compressionMethod, enableCrossOsArchive)
             };
             let response;
             try {
@@ -93664,31 +92868,31 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 throw error;
             }
             if (!response.ok) {
-                core_debug(`Cache not found for version ${request.version} of keys: ${keys.join(', ')}`);
+                core.debug(`Cache not found for version ${request.version} of keys: ${keys.join(', ')}`);
                 return undefined;
             }
             const isRestoreKeyMatch = request.key !== response.matchedKey;
             if (isRestoreKeyMatch) {
-                core_info(`Cache hit for restore-key: ${response.matchedKey}`);
+                core.info(`Cache hit for restore-key: ${response.matchedKey}`);
             }
             else {
-                core_info(`Cache hit for: ${response.matchedKey}`);
+                core.info(`Cache hit for: ${response.matchedKey}`);
             }
             if (options === null || options === void 0 ? void 0 : options.lookupOnly) {
-                core_info('Lookup only - skipping download');
+                core.info('Lookup only - skipping download');
                 return response.matchedKey;
             }
-            archivePath = external_path_.join(yield createTempDirectory(), getCacheFileName(compressionMethod));
-            core_debug(`Archive path: ${archivePath}`);
-            core_debug(`Starting download of archive to: ${archivePath}`);
-            yield downloadCache(response.signedDownloadUrl, archivePath, options);
-            const archiveFileSize = getArchiveFileSizeInBytes(archivePath);
-            core_info(`Cache Size: ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B)`);
-            if (isDebug()) {
+            archivePath = path.join(yield utils.createTempDirectory(), utils.getCacheFileName(compressionMethod));
+            core.debug(`Archive path: ${archivePath}`);
+            core.debug(`Starting download of archive to: ${archivePath}`);
+            yield cacheHttpClient.downloadCache(response.signedDownloadUrl, archivePath, options);
+            const archiveFileSize = utils.getArchiveFileSizeInBytes(archivePath);
+            core.info(`Cache Size: ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B)`);
+            if (core.isDebug()) {
                 yield listTar(archivePath, compressionMethod);
             }
-            yield tar_extractTar(archivePath, compressionMethod);
-            core_info('Cache restored successfully');
+            yield extractTar(archivePath, compressionMethod);
+            core.info('Cache restored successfully');
             return response.matchedKey;
         }
         catch (error) {
@@ -93704,21 +92908,21 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 if (typedError instanceof HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
-                    core_error(`Failed to restore: ${error.message}`);
+                    core.error(`Failed to restore: ${error.message}`);
                 }
                 else {
-                    core_warning(`Failed to restore: ${error.message}`);
+                    core.warning(`Failed to restore: ${error.message}`);
                 }
             }
         }
         finally {
             try {
                 if (archivePath) {
-                    yield unlinkFile(archivePath);
+                    yield utils.unlinkFile(archivePath);
                 }
             }
             catch (error) {
-                core_debug(`Failed to delete archive: ${error}`);
+                core.debug(`Failed to delete archive: ${error}`);
             }
         }
         return undefined;
@@ -93739,7 +92943,7 @@ function cache_saveCache(paths_1, key_1, options_1) {
         core_debug(`Cache service version: ${cacheServiceVersion}`);
         checkPaths(paths);
         checkKey(key);
-        const cacheMode = getCacheMode();
+        const cacheMode = config_getCacheMode();
         if (!isCacheWritable(cacheMode)) {
             core_info(`Cache save skipped: the effective cache-mode '${cacheMode}' does not permit writes.`);
             core_debug(`Skipped save for paths [${paths.join(', ')}] with key '${key}'.`);
@@ -93780,7 +92984,7 @@ function saveCacheV1(paths_1, key_1, options_1) {
         try {
             yield createTar(archiveFolder, cachePaths, compressionMethod);
             if (isDebug()) {
-                yield listTar(archivePath, compressionMethod);
+                yield tar_listTar(archivePath, compressionMethod);
             }
             const fileSizeLimit = 10 * 1024 * 1024 * 1024; // 10GB per repo limit
             const archiveFileSize = getArchiveFileSizeInBytes(archivePath);
@@ -93830,7 +93034,7 @@ function saveCacheV1(paths_1, key_1, options_1) {
                 // A write denied by policy (CacheWriteDeniedError) is not an
                 // HttpClientError and its name does not match the ReserveCacheError arm,
                 // so it falls here and is warned without failing the run.
-                if (typedError instanceof HttpClientError &&
+                if (typedError instanceof lib_HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
                     core_error(`Failed to save: ${typedError.message}`);
@@ -93883,7 +93087,7 @@ function saveCacheV2(paths_1, key_1, options_1) {
         try {
             yield createTar(archiveFolder, cachePaths, compressionMethod);
             if (isDebug()) {
-                yield listTar(archivePath, compressionMethod);
+                yield tar_listTar(archivePath, compressionMethod);
             }
             const archiveFileSize = getArchiveFileSizeInBytes(archivePath);
             core_debug(`File Size: ${archiveFileSize}`);
@@ -93951,7 +93155,7 @@ function saveCacheV2(paths_1, key_1, options_1) {
                 // A write denied by policy (CacheWriteDeniedError) is not an
                 // HttpClientError and its name does not match the ReserveCacheError arm,
                 // so it falls here and is warned without failing the run.
-                if (typedError instanceof HttpClientError &&
+                if (typedError instanceof lib_HttpClientError &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
                     core_error(`Failed to save: ${typedError.message}`);
@@ -94104,11 +93308,11 @@ function _ts_generator(thisArg, body) {
 
 
 
-var VALID_MODES = [
+var VALID_MODES = (/* unused pure expression or super */ null && ([
     "binary",
     "all",
     "false"
-];
+]));
 function parseCacheMode(input) {
     var normalized = (input || "binary").toLowerCase();
     if (!VALID_MODES.includes(normalized)) {
@@ -94153,10 +93357,10 @@ function parseCacheMode(input) {
 function cache_restoreCache(paths, key, restoreKeys) {
     return _async_to_generator(function() {
         return _ts_generator(this, function(_state) {
-            core_info("Attempting to restore cache with key '".concat(key, "'"));
+            core.info("Attempting to restore cache with key '".concat(key, "'"));
             return [
                 2,
-                restoreCache(paths, key, restoreKeys)
+                cache.restoreCache(paths, key, restoreKeys)
             ];
         });
     })();
@@ -94181,8 +93385,8 @@ function src_cache_saveCache(paths, key) {
     })();
 }
 
-;// CONCATENATED MODULE: ./src/hash.ts
-function hash_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+;// CONCATENATED MODULE: ./src/post.ts
+function post_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
         var value = info.value;
@@ -94193,889 +93397,16 @@ function hash_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) 
     if (info.done) resolve(value);
     else Promise.resolve(value).then(_next, _throw);
 }
-function hash_async_to_generator(fn) {
+function post_async_to_generator(fn) {
     return function() {
         var self = this, args = arguments;
         return new Promise(function(resolve, reject) {
             var gen = fn.apply(self, args);
             function _next(value) {
-                hash_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+                post_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
             }
             function _throw(err) {
-                hash_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-            }
-            _next(undefined);
-        });
-    };
-}
-function hash_ts_generator(thisArg, body) {
-    var f, y, t, _ = {
-        label: 0,
-        sent: function() {
-            if (t[0] & 1) throw t[1];
-            return t[1];
-        },
-        trys: [],
-        ops: []
-    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype), d = Object.defineProperty;
-    return d(g, "next", {
-        value: verb(0)
-    }), d(g, "throw", {
-        value: verb(1)
-    }), d(g, "return", {
-        value: verb(2)
-    }), typeof Symbol === "function" && d(g, Symbol.iterator, {
-        value: function() {
-            return this;
-        }
-    }), g;
-    function verb(n) {
-        return function(v) {
-            return step([
-                n,
-                v
-            ]);
-        };
-    }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while(g && (g = 0, op[0] && (_ = 0)), _)try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [
-                op[0] & 2,
-                t.value
-            ];
-            switch(op[0]){
-                case 0:
-                case 1:
-                    t = op;
-                    break;
-                case 4:
-                    _.label++;
-                    return {
-                        value: op[1],
-                        done: false
-                    };
-                case 5:
-                    _.label++;
-                    y = op[1];
-                    op = [
-                        0
-                    ];
-                    continue;
-                case 7:
-                    op = _.ops.pop();
-                    _.trys.pop();
-                    continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                        _ = 0;
-                        continue;
-                    }
-                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                        _.label = op[1];
-                        break;
-                    }
-                    if (op[0] === 6 && _.label < t[1]) {
-                        _.label = t[1];
-                        t = op;
-                        break;
-                    }
-                    if (t && _.label < t[2]) {
-                        _.label = t[2];
-                        _.ops.push(op);
-                        break;
-                    }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop();
-                    continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) {
-            op = [
-                6,
-                e
-            ];
-            y = 0;
-        } finally{
-            f = t = 0;
-        }
-        if (op[0] & 5) throw op[1];
-        return {
-            value: op[0] ? op[1] : void 0,
-            done: true
-        };
-    }
-}
-
-
-
-var SKIP_DIRS = new Set([
-    "bin",
-    "build",
-    "dist",
-    "node_modules",
-    "obj",
-    "target",
-    "zig-cache",
-    "zig-out"
-]);
-/**
- * Computes a deterministic fingerprint of the files that influence a Zig build
- * (`build.zig`, `build.zig.zon`, and `*.zig` sources), excluding build outputs
- * and dependencies.
- */ function hashBuildInputs(workspace) {
-    return hash_async_to_generator(function() {
-        var hash;
-        return hash_ts_generator(this, function(_state) {
-            switch(_state.label){
-                case 0:
-                    hash = (0,external_node_crypto_.createHash)("sha256");
-                    return [
-                        4,
-                        walk(workspace, workspace, hash)
-                    ];
-                case 1:
-                    _state.sent();
-                    return [
-                        2,
-                        hash.digest("hex").slice(0, 12)
-                    ];
-            }
-        });
-    })();
-}
-function walk(dir, workspace, hash) {
-    return hash_async_to_generator(function() {
-        var entries, unused, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, entry, full, relative, _, err;
-        return hash_ts_generator(this, function(_state) {
-            switch(_state.label){
-                case 0:
-                    _state.trys.push([
-                        0,
-                        2,
-                        ,
-                        3
-                    ]);
-                    return [
-                        4,
-                        (0,promises_namespaceObject.readdir)(dir, {
-                            withFileTypes: true
-                        })
-                    ];
-                case 1:
-                    entries = _state.sent();
-                    return [
-                        3,
-                        3
-                    ];
-                case 2:
-                    unused = _state.sent();
-                    return [
-                        2
-                    ];
-                case 3:
-                    entries.sort(function(a, b) {
-                        return a.name.localeCompare(b.name);
-                    });
-                    _iteratorNormalCompletion = true, _didIteratorError = false, _iteratorError = undefined;
-                    _state.label = 4;
-                case 4:
-                    _state.trys.push([
-                        4,
-                        11,
-                        12,
-                        13
-                    ]);
-                    _iterator = entries[Symbol.iterator]();
-                    _state.label = 5;
-                case 5:
-                    if (!!(_iteratorNormalCompletion = (_step = _iterator.next()).done)) return [
-                        3,
-                        10
-                    ];
-                    entry = _step.value;
-                    full = external_node_path_default().join(dir, entry.name);
-                    if (!entry.isDirectory()) return [
-                        3,
-                        7
-                    ];
-                    if (entry.name.startsWith(".") || SKIP_DIRS.has(entry.name)) {
-                        return [
-                            3,
-                            9
-                        ];
-                    }
-                    return [
-                        4,
-                        walk(full, workspace, hash)
-                    ];
-                case 6:
-                    _state.sent();
-                    return [
-                        3,
-                        9
-                    ];
-                case 7:
-                    if (!(entry.name === "build.zig" || entry.name.endsWith(".zig") || entry.name.endsWith(".zon"))) return [
-                        3,
-                        9
-                    ];
-                    relative = external_node_path_default().relative(workspace, full);
-                    hash.update(relative);
-                    hash.update("\u0000");
-                    _ = hash.update;
-                    return [
-                        4,
-                        (0,promises_namespaceObject.readFile)(full)
-                    ];
-                case 8:
-                    _.apply(hash, [
-                        _state.sent()
-                    ]);
-                    hash.update("\u0000");
-                    _state.label = 9;
-                case 9:
-                    _iteratorNormalCompletion = true;
-                    return [
-                        3,
-                        5
-                    ];
-                case 10:
-                    return [
-                        3,
-                        13
-                    ];
-                case 11:
-                    err = _state.sent();
-                    _didIteratorError = true;
-                    _iteratorError = err;
-                    return [
-                        3,
-                        13
-                    ];
-                case 12:
-                    try {
-                        if (!_iteratorNormalCompletion && _iterator.return != null) {
-                            _iterator.return();
-                        }
-                    } finally{
-                        if (_didIteratorError) {
-                            throw _iteratorError;
-                        }
-                    }
-                    return [
-                        7
-                    ];
-                case 13:
-                    return [
-                        2
-                    ];
-            }
-        });
-    })();
-}
-
-;// CONCATENATED MODULE: ./src/index-json.ts
-function index_json_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-    try {
-        var info = gen[key](arg);
-        var value = info.value;
-    } catch (error) {
-        reject(error);
-        return;
-    }
-    if (info.done) resolve(value);
-    else Promise.resolve(value).then(_next, _throw);
-}
-function index_json_async_to_generator(fn) {
-    return function() {
-        var self = this, args = arguments;
-        return new Promise(function(resolve, reject) {
-            var gen = fn.apply(self, args);
-            function _next(value) {
-                index_json_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-            }
-            function _throw(err) {
-                index_json_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-            }
-            _next(undefined);
-        });
-    };
-}
-function index_json_ts_generator(thisArg, body) {
-    var f, y, t, _ = {
-        label: 0,
-        sent: function() {
-            if (t[0] & 1) throw t[1];
-            return t[1];
-        },
-        trys: [],
-        ops: []
-    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype), d = Object.defineProperty;
-    return d(g, "next", {
-        value: verb(0)
-    }), d(g, "throw", {
-        value: verb(1)
-    }), d(g, "return", {
-        value: verb(2)
-    }), typeof Symbol === "function" && d(g, Symbol.iterator, {
-        value: function() {
-            return this;
-        }
-    }), g;
-    function verb(n) {
-        return function(v) {
-            return step([
-                n,
-                v
-            ]);
-        };
-    }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while(g && (g = 0, op[0] && (_ = 0)), _)try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [
-                op[0] & 2,
-                t.value
-            ];
-            switch(op[0]){
-                case 0:
-                case 1:
-                    t = op;
-                    break;
-                case 4:
-                    _.label++;
-                    return {
-                        value: op[1],
-                        done: false
-                    };
-                case 5:
-                    _.label++;
-                    y = op[1];
-                    op = [
-                        0
-                    ];
-                    continue;
-                case 7:
-                    op = _.ops.pop();
-                    _.trys.pop();
-                    continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                        _ = 0;
-                        continue;
-                    }
-                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                        _.label = op[1];
-                        break;
-                    }
-                    if (op[0] === 6 && _.label < t[1]) {
-                        _.label = t[1];
-                        t = op;
-                        break;
-                    }
-                    if (t && _.label < t[2]) {
-                        _.label = t[2];
-                        _.ops.push(op);
-                        break;
-                    }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop();
-                    continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) {
-            op = [
-                6,
-                e
-            ];
-            y = 0;
-        } finally{
-            f = t = 0;
-        }
-        if (op[0] & 5) throw op[1];
-        return {
-            value: op[0] ? op[1] : void 0,
-            done: true
-        };
-    }
-}
-/**
- * Types and helpers for the canonical Zig download index:
- * https://ziglang.org/download/index.json
- */ var ZIG_INDEX_URL = "https://ziglang.org/download/index.json";
-function fetchIndex() {
-    return index_json_async_to_generator(function() {
-        var url, response;
-        var _arguments = arguments;
-        return index_json_ts_generator(this, function(_state) {
-            switch(_state.label){
-                case 0:
-                    url = _arguments.length > 0 && _arguments[0] !== void 0 ? _arguments[0] : ZIG_INDEX_URL;
-                    return [
-                        4,
-                        fetch(url)
-                    ];
-                case 1:
-                    response = _state.sent();
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch Zig download index: ".concat(response.status, " ").concat(response.statusText));
-                    }
-                    return [
-                        4,
-                        response.json()
-                    ];
-                case 2:
-                    return [
-                        2,
-                        _state.sent()
-                    ];
-            }
-        });
-    }).apply(this, arguments);
-}
-function resolveVersion(requested, index) {
-    var _index_master_version;
-    var key;
-    if (requested === "master") {
-        if (!index.master) {
-            throw new Error("The Zig download index has no `master` entry");
-        }
-        key = "master";
-    } else if (requested === "latest") {
-        key = latestStable(index);
-    } else if (index[requested]) {
-        key = requested;
-    } else {
-        throw new Error('Zig version "'.concat(requested, '" is not available. Recent versions: ').concat(listVersions(index)));
-    }
-    var version = key === "master" ? (_index_master_version = index.master.version) !== null && _index_master_version !== void 0 ? _index_master_version : "master" : key;
-    return {
-        key: key,
-        version: version
-    };
-}
-function latestStable(index) {
-    var versions = Object.keys(index).filter(function(key) {
-        return key !== "master" && isSemver(key);
-    });
-    if (versions.length === 0) {
-        throw new Error("No stable Zig versions found in the download index");
-    }
-    versions.sort(compareSemver);
-    return versions[versions.length - 1];
-}
-function getDownloadFile(index, versionKey, triple) {
-    var entry = index[versionKey];
-    if (!entry) {
-        throw new Error('No entry for Zig version "'.concat(versionKey, '" in the download index'));
-    }
-    var file = entry[triple];
-    if (!file || typeof file === "string") {
-        throw new Error('Zig version "'.concat(versionKey, '" has no download for target "').concat(triple, '"'));
-    }
-    return file;
-}
-function listVersions(index) {
-    return Object.keys(index).filter(function(key) {
-        return key !== "master" && isSemver(key);
-    }).sort(compareSemver).slice(-10).join(", ");
-}
-function isSemver(value) {
-    return /^\d+\.\d+\.\d+/.test(value);
-}
-function compareSemver(a, b) {
-    var pa = a.split(".").map(function(part) {
-        return Number.parseInt(part, 10);
-    });
-    var pb = b.split(".").map(function(part) {
-        return Number.parseInt(part, 10);
-    });
-    for(var i = 0; i < 3; i++){
-        var _pa_i, _pb_i;
-        var da = (_pa_i = pa[i]) !== null && _pa_i !== void 0 ? _pa_i : 0;
-        var db = (_pb_i = pb[i]) !== null && _pb_i !== void 0 ? _pb_i : 0;
-        if (da !== db) {
-            return da - db;
-        }
-    }
-    return 0;
-}
-
-;// CONCATENATED MODULE: ./src/platform.ts
-/**
- * Maps the current GitHub Actions runner platform/arch to a Zig download target.
- * The target names are the keys of https://ziglang.org/download/index.json.
- */ var TRIPLES = {
-    linux: {
-        x64: "x86_64-linux",
-        arm64: "aarch64-linux"
-    },
-    darwin: {
-        x64: "x86_64-macos",
-        arm64: "aarch64-macos"
-    },
-    win32: {
-        x64: "x86_64-windows",
-        arm64: "aarch64-windows"
-    }
-};
-function getZigTarget() {
-    var platform = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : process.platform, arch = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : process.arch;
-    var byArch = TRIPLES[platform];
-    if (!byArch) {
-        throw new Error("Unsupported platform: ".concat(platform));
-    }
-    var triple = byArch[arch];
-    if (!triple) {
-        throw new Error("Unsupported architecture: ".concat(arch, " on ").concat(platform));
-    }
-    return {
-        triple: triple,
-        ext: platform === "win32" ? "zip" : "tar.xz"
-    };
-}
-
-;// CONCATENATED MODULE: ./src/zon.ts
-function zon_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-    try {
-        var info = gen[key](arg);
-        var value = info.value;
-    } catch (error) {
-        reject(error);
-        return;
-    }
-    if (info.done) resolve(value);
-    else Promise.resolve(value).then(_next, _throw);
-}
-function zon_async_to_generator(fn) {
-    return function() {
-        var self = this, args = arguments;
-        return new Promise(function(resolve, reject) {
-            var gen = fn.apply(self, args);
-            function _next(value) {
-                zon_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-            }
-            function _throw(err) {
-                zon_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-            }
-            _next(undefined);
-        });
-    };
-}
-function zon_ts_generator(thisArg, body) {
-    var f, y, t, _ = {
-        label: 0,
-        sent: function() {
-            if (t[0] & 1) throw t[1];
-            return t[1];
-        },
-        trys: [],
-        ops: []
-    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype), d = Object.defineProperty;
-    return d(g, "next", {
-        value: verb(0)
-    }), d(g, "throw", {
-        value: verb(1)
-    }), d(g, "return", {
-        value: verb(2)
-    }), typeof Symbol === "function" && d(g, Symbol.iterator, {
-        value: function() {
-            return this;
-        }
-    }), g;
-    function verb(n) {
-        return function(v) {
-            return step([
-                n,
-                v
-            ]);
-        };
-    }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while(g && (g = 0, op[0] && (_ = 0)), _)try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [
-                op[0] & 2,
-                t.value
-            ];
-            switch(op[0]){
-                case 0:
-                case 1:
-                    t = op;
-                    break;
-                case 4:
-                    _.label++;
-                    return {
-                        value: op[1],
-                        done: false
-                    };
-                case 5:
-                    _.label++;
-                    y = op[1];
-                    op = [
-                        0
-                    ];
-                    continue;
-                case 7:
-                    op = _.ops.pop();
-                    _.trys.pop();
-                    continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                        _ = 0;
-                        continue;
-                    }
-                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                        _.label = op[1];
-                        break;
-                    }
-                    if (op[0] === 6 && _.label < t[1]) {
-                        _.label = t[1];
-                        t = op;
-                        break;
-                    }
-                    if (t && _.label < t[2]) {
-                        _.label = t[2];
-                        _.ops.push(op);
-                        break;
-                    }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop();
-                    continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) {
-            op = [
-                6,
-                e
-            ];
-            y = 0;
-        } finally{
-            f = t = 0;
-        }
-        if (op[0] & 5) throw op[1];
-        return {
-            value: op[0] ? op[1] : void 0,
-            done: true
-        };
-    }
-}
-
-
-var zon_SKIP_DIRS = new Set([
-    "bin",
-    "build",
-    "dist",
-    "node_modules",
-    "obj",
-    "target",
-    "zig-cache",
-    "zig-out"
-]);
-/**
- * Extracts the `minimum_zig_version` field from a `build.zig.zon` file.
- * The field is declared as `.minimum_zig_version = "0.14.0"`.
- */ function extractMinimumZigVersion(zon) {
-    var match = zon.match(/\.minimum_zig_version\s*=\s*"([^"]+)"/);
-    return match === null || match === void 0 ? void 0 : match[1];
-}
-/**
- * Searches for `build.zig.zon` starting at `workspace` (root first, then
- * subdirectories depth-first) and returns its `minimum_zig_version`, if any.
- */ function readMinimumZigVersion(workspace) {
-    return zon_async_to_generator(function() {
-        return zon_ts_generator(this, function(_state) {
-            return [
-                2,
-                searchForMinimumZigVersion(workspace)
-            ];
-        });
-    })();
-}
-function searchForMinimumZigVersion(dir) {
-    return zon_async_to_generator(function() {
-        var version, entries, unused, subdirs, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, name, found, err;
-        return zon_ts_generator(this, function(_state) {
-            switch(_state.label){
-                case 0:
-                    return [
-                        4,
-                        tryReadMinimumZigVersion(external_node_path_default().join(dir, "build.zig.zon"))
-                    ];
-                case 1:
-                    version = _state.sent();
-                    if (version !== undefined) {
-                        return [
-                            2,
-                            version
-                        ];
-                    }
-                    _state.label = 2;
-                case 2:
-                    _state.trys.push([
-                        2,
-                        4,
-                        ,
-                        5
-                    ]);
-                    return [
-                        4,
-                        (0,promises_namespaceObject.readdir)(dir, {
-                            withFileTypes: true
-                        })
-                    ];
-                case 3:
-                    entries = _state.sent();
-                    return [
-                        3,
-                        5
-                    ];
-                case 4:
-                    unused = _state.sent();
-                    return [
-                        2,
-                        undefined
-                    ];
-                case 5:
-                    subdirs = entries.filter(function(entry) {
-                        return entry.isDirectory() && !entry.name.startsWith(".") && !zon_SKIP_DIRS.has(entry.name);
-                    }).map(function(entry) {
-                        return entry.name;
-                    }).sort();
-                    _iteratorNormalCompletion = true, _didIteratorError = false, _iteratorError = undefined;
-                    _state.label = 6;
-                case 6:
-                    _state.trys.push([
-                        6,
-                        11,
-                        12,
-                        13
-                    ]);
-                    _iterator = subdirs[Symbol.iterator]();
-                    _state.label = 7;
-                case 7:
-                    if (!!(_iteratorNormalCompletion = (_step = _iterator.next()).done)) return [
-                        3,
-                        10
-                    ];
-                    name = _step.value;
-                    return [
-                        4,
-                        searchForMinimumZigVersion(external_node_path_default().join(dir, name))
-                    ];
-                case 8:
-                    found = _state.sent();
-                    if (found !== undefined) {
-                        return [
-                            2,
-                            found
-                        ];
-                    }
-                    _state.label = 9;
-                case 9:
-                    _iteratorNormalCompletion = true;
-                    return [
-                        3,
-                        7
-                    ];
-                case 10:
-                    return [
-                        3,
-                        13
-                    ];
-                case 11:
-                    err = _state.sent();
-                    _didIteratorError = true;
-                    _iteratorError = err;
-                    return [
-                        3,
-                        13
-                    ];
-                case 12:
-                    try {
-                        if (!_iteratorNormalCompletion && _iterator.return != null) {
-                            _iterator.return();
-                        }
-                    } finally{
-                        if (_didIteratorError) {
-                            throw _iteratorError;
-                        }
-                    }
-                    return [
-                        7
-                    ];
-                case 13:
-                    return [
-                        2,
-                        undefined
-                    ];
-            }
-        });
-    })();
-}
-function tryReadMinimumZigVersion(zonPath) {
-    return zon_async_to_generator(function() {
-        var content, unused;
-        return zon_ts_generator(this, function(_state) {
-            switch(_state.label){
-                case 0:
-                    _state.trys.push([
-                        0,
-                        2,
-                        ,
-                        3
-                    ]);
-                    return [
-                        4,
-                        (0,promises_namespaceObject.readFile)(zonPath, "utf8")
-                    ];
-                case 1:
-                    content = _state.sent();
-                    return [
-                        2,
-                        extractMinimumZigVersion(content)
-                    ];
-                case 2:
-                    unused = _state.sent();
-                    return [
-                        2,
-                        undefined
-                    ];
-                case 3:
-                    return [
-                        2
-                    ];
-            }
-        });
-    })();
-}
-
-;// CONCATENATED MODULE: ./src/main.ts
-function main_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-    try {
-        var info = gen[key](arg);
-        var value = info.value;
-    } catch (error) {
-        reject(error);
-        return;
-    }
-    if (info.done) resolve(value);
-    else Promise.resolve(value).then(_next, _throw);
-}
-function main_async_to_generator(fn) {
-    return function() {
-        var self = this, args = arguments;
-        return new Promise(function(resolve, reject) {
-            var gen = fn.apply(self, args);
-            function _next(value) {
-                main_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-            }
-            function _throw(err) {
-                main_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+                post_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
             }
             _next(undefined);
         });
@@ -95087,7 +93418,7 @@ function _instanceof(left, right) {
         return !!right[Symbol.hasInstance](left);
     } else return left instanceof right;
 }
-function main_ts_generator(thisArg, body) {
+function post_ts_generator(thisArg, body) {
     var f, y, t, _ = {
         label: 0,
         sent: function() {
@@ -95189,258 +93520,120 @@ function main_ts_generator(thisArg, body) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-function main_run() {
-    return main_async_to_generator(function() {
-        var requestedVersion, cacheMode, _getZigTarget, triple, ext, index, zonVersion, requested, resolved, download, cacheHit, installDir, archive, extracted, _tmp, _process_env_RUNNER_TEMP, tarballPath, tarballKey, restoredKey, extracted1, _tmp1, root, buildHash, globalDir, localDir, zig, error;
-        return main_ts_generator(this, function(_state) {
+/**
+ * Post step: runs after the workflow's build steps to persist the Zig compile
+ * caches (global + project-local). Best-effort — failures only warn.
+ */ function post_run() {
+    return post_async_to_generator(function() {
+        var triple, version, buildHash, targets, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, _step_value, dir, key, err, error;
+        return post_ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
                     _state.trys.push([
                         0,
-                        30,
+                        10,
                         ,
-                        31
+                        11
                     ]);
-                    requestedVersion = getInput("version");
-                    cacheMode = parseCacheMode(getInput("cache"));
-                    _getZigTarget = getZigTarget(), triple = _getZigTarget.triple, ext = _getZigTarget.ext;
-                    return [
-                        4,
-                        fetchIndex()
-                    ];
-                case 1:
-                    index = _state.sent();
-                    return [
-                        4,
-                        readMinimumZigVersion(process.cwd())
-                    ];
-                case 2:
-                    zonVersion = _state.sent();
-                    requested = requestedVersion || zonVersion || "latest";
-                    if (!requestedVersion) {
-                        core_info(zonVersion ? 'No version input; detected "'.concat(zonVersion, '" from build.zig.zon') : 'No version input and no build.zig.zon found; falling back to "latest"');
+                    if (getState("setup-zig-cache-mode") !== "all") {
+                        return [
+                            2
+                        ];
                     }
-                    resolved = resolveVersion(requested, index);
-                    core_info("Installing Zig ".concat(resolved.version));
-                    download = getDownloadFile(index, resolved.key, triple);
-                    cacheHit = false;
-                    if (!(cacheMode === "false")) return [
-                        3,
-                        10
+                    triple = getState("setup-zig-triple");
+                    version = getState("setup-zig-version");
+                    buildHash = getState("setup-zig-build-hash");
+                    targets = [
+                        {
+                            dir: getZigGlobalCacheDir(),
+                            key: globalCacheKey(triple, version)
+                        },
+                        {
+                            dir: getZigLocalCacheDir(process.cwd()),
+                            key: localCacheKey(triple, version, buildHash)
+                        }
                     ];
-                    core_info("Downloading Zig ".concat(resolved.version, " from ").concat(download.tarball));
-                    return [
-                        4,
-                        downloadTool(download.tarball)
-                    ];
-                case 3:
-                    archive = _state.sent();
-                    return [
-                        4,
-                        verifySha256(archive, download.shasum)
-                    ];
-                case 4:
-                    _state.sent();
-                    if (!(ext === "zip")) return [
+                    _iteratorNormalCompletion = true, _didIteratorError = false, _iteratorError = undefined;
+                    _state.label = 1;
+                case 1:
+                    _state.trys.push([
+                        1,
+                        7,
+                        8,
+                        9
+                    ]);
+                    _iterator = targets[Symbol.iterator]();
+                    _state.label = 2;
+                case 2:
+                    if (!!(_iteratorNormalCompletion = (_step = _iterator.next()).done)) return [
                         3,
                         6
                     ];
-                    return [
-                        4,
-                        extractZip(archive)
-                    ];
-                case 5:
-                    _tmp = _state.sent();
-                    return [
+                    _step_value = _step.value, dir = _step_value.dir, key = _step_value.key;
+                    if (!(0,external_node_fs_namespaceObject.existsSync)(dir)) return [
                         3,
-                        8
+                        4
                     ];
-                case 6:
-                    return [
-                        4,
-                        extractTar(archive, undefined, "xJ")
-                    ];
-                case 7:
-                    _tmp = _state.sent();
-                    _state.label = 8;
-                case 8:
-                    extracted = _tmp;
-                    return [
-                        4,
-                        findZigRoot(extracted)
-                    ];
-                case 9:
-                    installDir = _state.sent();
-                    return [
-                        3,
-                        24
-                    ];
-                case 10:
-                    installDir = find("zig", resolved.version, process.arch);
-                    if (!installDir) return [
-                        3,
-                        11
-                    ];
-                    cacheHit = true;
-                    core_info("Found Zig ".concat(resolved.version, " in tool cache"));
-                    return [
-                        3,
-                        24
-                    ];
-                case 11:
-                    tarballPath = external_node_path_default().join((_process_env_RUNNER_TEMP = process.env.RUNNER_TEMP) !== null && _process_env_RUNNER_TEMP !== void 0 ? _process_env_RUNNER_TEMP : external_node_os_default().tmpdir(), "zig-".concat(triple, "-").concat(resolved.version, ".").concat(ext));
-                    tarballKey = tarballCacheKey(triple, resolved.version);
-                    return [
-                        4,
-                        cache_restoreCache([
-                            tarballPath
-                        ], tarballKey)
-                    ];
-                case 12:
-                    restoredKey = _state.sent();
-                    if (!restoredKey) return [
-                        3,
-                        13
-                    ];
-                    cacheHit = true;
-                    core_info("Restored Zig tarball from cache (".concat(restoredKey, ")"));
-                    return [
-                        3,
-                        17
-                    ];
-                case 13:
-                    core_info("Downloading Zig ".concat(resolved.version, " from ").concat(download.tarball));
-                    return [
-                        4,
-                        downloadTool(download.tarball, tarballPath)
-                    ];
-                case 14:
-                    _state.sent();
-                    return [
-                        4,
-                        verifySha256(tarballPath, download.shasum)
-                    ];
-                case 15:
-                    _state.sent();
                     return [
                         4,
                         src_cache_saveCache([
-                            tarballPath
-                        ], tarballKey)
+                            dir
+                        ], key)
                     ];
-                case 16:
-                    _state.sent();
-                    _state.label = 17;
-                case 17:
-                    if (!(ext === "zip")) return [
-                        3,
-                        19
-                    ];
-                    return [
-                        4,
-                        extractZip(tarballPath)
-                    ];
-                case 18:
-                    _tmp1 = _state.sent();
-                    return [
-                        3,
-                        21
-                    ];
-                case 19:
-                    return [
-                        4,
-                        extractTar(tarballPath, undefined, "xJ")
-                    ];
-                case 20:
-                    _tmp1 = _state.sent();
-                    _state.label = 21;
-                case 21:
-                    extracted1 = _tmp1;
-                    return [
-                        4,
-                        findZigRoot(extracted1)
-                    ];
-                case 22:
-                    root = _state.sent();
-                    return [
-                        4,
-                        cacheDir(root, "zig", resolved.version, process.arch)
-                    ];
-                case 23:
-                    installDir = _state.sent();
-                    _state.label = 24;
-                case 24:
-                    if (!(cacheMode === "all")) return [
-                        3,
-                        28
-                    ];
-                    return [
-                        4,
-                        hashBuildInputs(process.cwd())
-                    ];
-                case 25:
-                    buildHash = _state.sent();
-                    globalDir = getZigGlobalCacheDir();
-                    localDir = getZigLocalCacheDir(process.cwd());
-                    return [
-                        4,
-                        cache_restoreCache([
-                            globalDir
-                        ], globalCacheKey(triple, resolved.version))
-                    ];
-                case 26:
+                case 3:
                     _state.sent();
                     return [
-                        4,
-                        cache_restoreCache([
-                            localDir
-                        ], localCacheKey(triple, resolved.version, buildHash), localCacheRestoreKeys(triple, resolved.version))
+                        3,
+                        5
                     ];
-                case 27:
-                    _state.sent();
-                    saveState("setup-zig-cache-mode", cacheMode);
-                    saveState("setup-zig-triple", triple);
-                    saveState("setup-zig-version", resolved.version);
-                    saveState("setup-zig-build-hash", buildHash);
-                    _state.label = 28;
-                case 28:
-                    addPath(installDir);
-                    core_info("Added ".concat(installDir, " to PATH"));
-                    zig = process.platform === "win32" ? "zig.exe" : "zig";
-                    return [
-                        4,
-                        exec_exec(external_node_path_default().join(installDir, zig), [
-                            "version"
-                        ])
-                    ];
-                case 29:
-                    _state.sent();
-                    setOutput("version", resolved.version);
-                    setOutput("path", installDir);
-                    setOutput("cache-hit", cacheHit.toString());
+                case 4:
+                    core_info("Skipping cache save: ".concat(dir, " does not exist"));
+                    _state.label = 5;
+                case 5:
+                    _iteratorNormalCompletion = true;
                     return [
                         3,
-                        31
+                        2
                     ];
-                case 30:
+                case 6:
+                    return [
+                        3,
+                        9
+                    ];
+                case 7:
+                    err = _state.sent();
+                    _didIteratorError = true;
+                    _iteratorError = err;
+                    return [
+                        3,
+                        9
+                    ];
+                case 8:
+                    try {
+                        if (!_iteratorNormalCompletion && _iterator.return != null) {
+                            _iterator.return();
+                        }
+                    } finally{
+                        if (_didIteratorError) {
+                            throw _iteratorError;
+                        }
+                    }
+                    return [
+                        7
+                    ];
+                case 9:
+                    return [
+                        3,
+                        11
+                    ];
+                case 10:
                     error = _state.sent();
-                    setFailed(_instanceof(error, Error) ? error : String(error));
+                    core_warning(_instanceof(error, Error) ? error.message : String(error));
                     return [
                         3,
-                        31
+                        11
                     ];
-                case 31:
+                case 11:
                     return [
                         2
                     ];
@@ -95448,82 +93641,7 @@ function main_run() {
         });
     })();
 }
-function verifySha256(file, expected) {
-    return main_async_to_generator(function() {
-        var hash, actual;
-        return main_ts_generator(this, function(_state) {
-            switch(_state.label){
-                case 0:
-                    hash = (0,external_node_crypto_.createHash)("sha256");
-                    return [
-                        4,
-                        (0,external_node_stream_promises_namespaceObject.pipeline)((0,external_node_fs_namespaceObject.createReadStream)(file), hash)
-                    ];
-                case 1:
-                    _state.sent();
-                    actual = hash.digest("hex");
-                    if (actual !== expected) {
-                        throw new Error("Checksum mismatch: expected ".concat(expected, ", got ").concat(actual));
-                    }
-                    return [
-                        2
-                    ];
-            }
-        });
-    })();
-}
-function findZigRoot(extracted) {
-    return main_async_to_generator(function() {
-        var entries, dirs, zigName;
-        return main_ts_generator(this, function(_state) {
-            switch(_state.label){
-                case 0:
-                    return [
-                        4,
-                        (0,promises_namespaceObject.readdir)(extracted, {
-                            withFileTypes: true
-                        })
-                    ];
-                case 1:
-                    entries = _state.sent();
-                    dirs = entries.filter(function(entry) {
-                        return entry.isDirectory();
-                    });
-                    if (dirs.length === 1) {
-                        return [
-                            2,
-                            external_node_path_default().join(extracted, dirs[0].name)
-                        ];
-                    }
-                    zigName = process.platform === "win32" ? "zig.exe" : "zig";
-                    if (entries.some(function(entry) {
-                        return entry.isFile() && entry.name === zigName;
-                    })) {
-                        return [
-                            2,
-                            extracted
-                        ];
-                    }
-                    throw new Error("Unexpected archive layout: ".concat(entries.map(function(entry) {
-                        return entry.name;
-                    }).join(", ")));
-            }
-        });
-    })();
-}
-
-;// CONCATENATED MODULE: ./src/index.ts
-function src_instanceof(left, right) {
-    "@swc/helpers - instanceof";
-    if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
-        return !!right[Symbol.hasInstance](left);
-    } else return left instanceof right;
-}
-
-
-main_run().catch(function(error) {
-    setFailed(src_instanceof(error, Error) ? error : String(error));
-});
+post_run();
 
 })();
 

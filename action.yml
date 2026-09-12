@@ -11,7 +11,8 @@ inputs:
   cache:
     description: |
       Caching behavior: "binary" (default) caches only the Zig toolchain,
-      "all" additionally caches the Zig global cache, "false" disables caching.
+      "all" additionally caches the Zig global and project-local compile caches,
+      "false" disables caching.
     required: false
     default: binary
 
@@ -26,6 +27,7 @@ outputs:
 runs:
   using: node24
   main: dist/index.js
+  post: dist/post.js
 
 branding:
   icon: package
