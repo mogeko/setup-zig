@@ -2,7 +2,7 @@
 
 Install the [Zig](https://ziglang.org/) toolchain on a GitHub Actions runner, and add `zig` to `PATH`.
 
-## 用法
+## Usage
 
 ```yaml
 - uses: mogeko/setup-zig@v1
@@ -17,7 +17,7 @@ When `version` is not specified, it will try the following in order:
 1. Read the `minimum_zig_version` in `build.zig.zon` (supports recursively searching subdirectories)
 2. Fall back to the latest stable version
 
-## 输入
+## Inputs
 
 | Input | Default value | Description |
 |------|--------|------|
@@ -32,7 +32,7 @@ When `version` is not specified, it will try the following in order:
 | `path` | The directory containing the `zig` executable |
 | `cache-hit` | Whether the toolchain hit the cache |
 
-## 开发
+## Development
 
 ```sh
 pnpm install

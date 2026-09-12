@@ -1,15 +1,15 @@
 # hello
 
-Example project demonstrating `setup-zig` automatically detecting the
+Example project demonstrating `setup-zig` automatically detecting the minimum Zig version from `build.zig.zon` and installing it.
 
-## 运行
+## Build and run
 
 ```sh
 zig build run
 # Hello from Zig!
 ```
 
-## 说明
+## Notes
 
 - When `minimum_zig_version = "0.16.0"` is declared in `build.zig.zon`, the action automatically installs the corresponding version when `version` is not specified.
 - Located in the `examples/hello/` subdirectory, used to verify the ability to recursively search for `build.zig.zon`.
