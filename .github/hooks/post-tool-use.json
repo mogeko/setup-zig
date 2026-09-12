@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/format.sh",
+        "timeout": 30
+      },
+      {
+        "type": "command",
+        "command": "bash .github/hooks/scripts/build-on-src-change.sh",
+        "timeout": 120
+      }
+    ]
+  }
+}

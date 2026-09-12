@@ -1,0 +1,48 @@
+name: Test action
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        version: ["0.16.0", "master"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup Zig
+        id: zig
+        uses: ./
+        with:
+          version: ${{ matrix.version }}
+      - name: Verify zig
+        run: |
+          zig version
+          echo "version output: ${{ steps.zig.outputs.version }}"
+          echo "install path:  ${{ steps.zig.outputs.path }}"
+          echo "cache hit:     ${{ steps.zig.outputs.cache-hit }}"
+
+  examples:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup Zig
+        id: zig
+        uses: ./
+        with:
+          cache: all
+      - name: Build example
+        working-directory: examples/hello
+        run: zig build
+      - name: Run example
+        working-directory: examples/hello
+        run: zig build run
