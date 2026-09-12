@@ -55,9 +55,7 @@ export function getZigGlobalCacheDir(): string {
       process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local");
     return path.join(localAppData, "zig");
   }
-  if (process.platform === "darwin") {
-    return path.join(os.homedir(), "Library", "Caches", "zig");
-  }
+  // Zig uses the XDG cache location on all Unix-like systems, including macOS.
   const cacheHome =
     process.env.XDG_CACHE_HOME ?? path.join(os.homedir(), ".cache");
   return path.join(cacheHome, "zig");

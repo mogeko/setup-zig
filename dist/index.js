@@ -94145,9 +94145,7 @@ function parseCacheMode(input) {
         var localAppData = (_process_env_LOCALAPPDATA = process.env.LOCALAPPDATA) !== null && _process_env_LOCALAPPDATA !== void 0 ? _process_env_LOCALAPPDATA : external_node_path_default().join(external_node_os_default().homedir(), "AppData", "Local");
         return external_node_path_default().join(localAppData, "zig");
     }
-    if (process.platform === "darwin") {
-        return external_node_path_default().join(external_node_os_default().homedir(), "Library", "Caches", "zig");
-    }
+    // Zig uses the XDG cache location on all Unix-like systems, including macOS.
     var cacheHome = (_process_env_XDG_CACHE_HOME = process.env.XDG_CACHE_HOME) !== null && _process_env_XDG_CACHE_HOME !== void 0 ? _process_env_XDG_CACHE_HOME : external_node_path_default().join(external_node_os_default().homedir(), ".cache");
     return external_node_path_default().join(cacheHome, "zig");
 }
