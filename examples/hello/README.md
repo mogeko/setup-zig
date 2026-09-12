@@ -12,4 +12,4 @@ zig build run
 ## Notes
 
 - The `build.zig.zon` declares `minimum_zig_version = "0.16.0"`; the action installs it when `version` is not specified and the working directory is inside this project.
-- Lives under `examples/hello/`, so CI passes `version: 0.16.0` explicitly — the action only searches upward from the workspace root, never down into subdirectories (matching Zig's own lookup order).
+- The action searches upward for `build.zig.zon`/`build.zig` (matching Zig's own lookup order) and never descends into subdirectories. Since this example lives under `examples/hello/`, the CI workflow moves it to the workspace root before invoking the action, so auto-detection and the `.zig-cache` save both work.

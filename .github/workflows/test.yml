@@ -33,15 +33,19 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        working-directory: examples/hello
     steps:
       - uses: actions/checkout@v7
-      - name: Setup Zig
-        uses: ./
         with:
-          version: 0.16.0
+          path: action
+      - name: Move example project to workspace root
+        shell: bash
+        run: |
+          mv action/examples/hello/build.zig .
+          mv action/examples/hello/build.zig.zon .
+          mv action/examples/hello/src .
+      - name: Setup Zig
+        uses: ./action
+        with:
           cache: all
       - run: zig build
       - run: zig build run
