@@ -11,5 +11,5 @@ zig build run
 
 ## Notes
 
-- When `minimum_zig_version = "0.16.0"` is declared in `build.zig.zon`, the action automatically installs the corresponding version when `version` is not specified.
-- Located in the `examples/hello/` subdirectory, used to verify the ability to recursively search for `build.zig.zon`.
+- The `build.zig.zon` declares `minimum_zig_version = "0.16.0"`; the action installs it when `version` is not specified and the working directory is inside this project.
+- Lives under `examples/hello/`, so CI passes `version: 0.16.0` explicitly — the action only searches upward from the workspace root, never down into subdirectories (matching Zig's own lookup order).

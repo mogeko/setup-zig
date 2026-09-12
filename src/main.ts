@@ -34,17 +34,19 @@ import {
 import { hashBuildInputs } from "./hash";
 import { fetchIndex, getDownloadFile, resolveVersion } from "./index-json";
 import { getZigTarget } from "./platform";
+import { findProjectRoot } from "./projects";
 import { readMinimumZigVersion } from "./zon";
 
 export async function run(): Promise<void> {
   try {
     const requestedVersion = getInput("version");
     const cacheMode = parseCacheMode(getInput("cache"));
+    const workdir = process.cwd();
     const { triple, ext } = getZigTarget();
 
     const index = await fetchIndex();
 
-    const zonVersion = await readMinimumZigVersion(process.cwd());
+    const zonVersion = await readMinimumZigVersion(workdir);
     const requested = requestedVersion || zonVersion || "latest";
     if (!requestedVersion) {
       info(
@@ -106,12 +108,14 @@ export async function run(): Promise<void> {
     }
 
     if (cacheMode === "all") {
-      const buildHash = await hashBuildInputs(process.cwd());
-      const globalDir = getZigGlobalCacheDir();
-      const localDir = getZigLocalCacheDir(process.cwd());
-      await restoreCache([globalDir], globalCacheKey(triple, resolved.version));
+      const projectRoot = (await findProjectRoot(workdir)) ?? workdir;
+      const buildHash = await hashBuildInputs(projectRoot);
       await restoreCache(
-        [localDir],
+        [getZigGlobalCacheDir()],
+        globalCacheKey(triple, resolved.version),
+      );
+      await restoreCache(
+        [getZigLocalCacheDir(projectRoot)],
         localCacheKey(triple, resolved.version, buildHash),
         localCacheRestoreKeys(triple, resolved.version),
       );
@@ -120,6 +124,7 @@ export async function run(): Promise<void> {
       saveState("setup-zig-triple", triple);
       saveState("setup-zig-version", resolved.version);
       saveState("setup-zig-build-hash", buildHash);
+      saveState("setup-zig-project-root", projectRoot);
     }
 
     addPath(installDir);

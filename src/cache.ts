@@ -63,9 +63,9 @@ export function getZigGlobalCacheDir(): string {
   return path.join(cacheHome, "zig");
 }
 
-/** Zig project-local cache directory (`.zig-cache` in the workspace). */
-export function getZigLocalCacheDir(workspace: string): string {
-  return path.join(workspace, ".zig-cache");
+/** Zig project-local cache directory (`.zig-cache` under a project root). */
+export function getZigLocalCacheDir(projectDir: string): string {
+  return path.join(projectDir, ".zig-cache");
 }
 
 export async function restoreCache(

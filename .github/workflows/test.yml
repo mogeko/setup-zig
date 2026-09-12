@@ -41,6 +41,7 @@ jobs:
       - name: Setup Zig
         uses: ./
         with:
+          version: 0.16.0
           cache: all
       - run: zig build
       - run: zig build run

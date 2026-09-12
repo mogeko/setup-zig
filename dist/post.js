@@ -93355,8 +93355,8 @@ function parseCacheMode(input) {
     var cacheHome = (_process_env_XDG_CACHE_HOME = process.env.XDG_CACHE_HOME) !== null && _process_env_XDG_CACHE_HOME !== void 0 ? _process_env_XDG_CACHE_HOME : external_node_path_default().join(external_node_os_default().homedir(), ".cache");
     return external_node_path_default().join(cacheHome, "zig");
 }
-/** Zig project-local cache directory (`.zig-cache` in the workspace). */ function getZigLocalCacheDir(workspace) {
-    return external_node_path_default().join(workspace, ".zig-cache");
+/** Zig project-local cache directory (`.zig-cache` under a project root). */ function getZigLocalCacheDir(projectDir) {
+    return external_node_path_default().join(projectDir, ".zig-cache");
 }
 function cache_restoreCache(paths, key, restoreKeys) {
     return _async_to_generator(function() {
@@ -93529,15 +93529,15 @@ function post_ts_generator(thisArg, body) {
  * caches (global + project-local). Best-effort — failures only warn.
  */ function post_run() {
     return post_async_to_generator(function() {
-        var triple, version, buildHash, targets, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, _step_value, dir, key, err, error;
+        var triple, version, buildHash, projectRoot, error;
         return post_ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
                     _state.trys.push([
                         0,
-                        10,
+                        3,
                         ,
-                        11
+                        4
                     ]);
                     if (getState("setup-zig-cache-mode") !== "all") {
                         return [
@@ -93547,97 +93547,78 @@ function post_ts_generator(thisArg, body) {
                     triple = getState("setup-zig-triple");
                     version = getState("setup-zig-version");
                     buildHash = getState("setup-zig-build-hash");
-                    targets = [
-                        {
-                            dir: getZigGlobalCacheDir(),
-                            key: globalCacheKey(triple, version)
-                        },
-                        {
-                            dir: getZigLocalCacheDir(process.cwd()),
-                            key: localCacheKey(triple, version, buildHash)
-                        }
+                    projectRoot = getState("setup-zig-project-root") || process.cwd();
+                    return [
+                        4,
+                        saveIfExists(getZigGlobalCacheDir(), globalCacheKey(triple, version))
                     ];
-                    _iteratorNormalCompletion = true, _didIteratorError = false, _iteratorError = undefined;
+                case 1:
+                    _state.sent();
+                    return [
+                        4,
+                        saveIfExists(getZigLocalCacheDir(projectRoot), localCacheKey(triple, version, buildHash))
+                    ];
+                case 2:
+                    _state.sent();
+                    return [
+                        3,
+                        4
+                    ];
+                case 3:
+                    error = _state.sent();
+                    core_warning(_instanceof(error, Error) ? error.message : String(error));
+                    return [
+                        3,
+                        4
+                    ];
+                case 4:
+                    return [
+                        2
+                    ];
+            }
+        });
+    })();
+}
+function saveIfExists(dir, key) {
+    return post_async_to_generator(function() {
+        var error;
+        return post_ts_generator(this, function(_state) {
+            switch(_state.label){
+                case 0:
+                    if (!(0,external_node_fs_namespaceObject.existsSync)(dir)) {
+                        core_info("Skipping cache save: ".concat(dir, " does not exist"));
+                        return [
+                            2
+                        ];
+                    }
                     _state.label = 1;
                 case 1:
                     _state.trys.push([
                         1,
-                        7,
-                        8,
-                        9
-                    ]);
-                    _iterator = targets[Symbol.iterator]();
-                    _state.label = 2;
-                case 2:
-                    if (!!(_iteratorNormalCompletion = (_step = _iterator.next()).done)) return [
                         3,
-                        6
-                    ];
-                    _step_value = _step.value, dir = _step_value.dir, key = _step_value.key;
-                    if (!(0,external_node_fs_namespaceObject.existsSync)(dir)) return [
-                        3,
+                        ,
                         4
-                    ];
+                    ]);
                     return [
                         4,
                         src_cache_saveCache([
                             dir
                         ], key)
                     ];
-                case 3:
+                case 2:
                     _state.sent();
                     return [
                         3,
-                        5
+                        4
+                    ];
+                case 3:
+                    error = _state.sent();
+                    core_warning("Failed to save cache '".concat(key, "': ").concat(_instanceof(error, Error) ? error.message : String(error)));
+                    return [
+                        3,
+                        4
                     ];
                 case 4:
-                    core_info("Skipping cache save: ".concat(dir, " does not exist"));
-                    _state.label = 5;
-                case 5:
-                    _iteratorNormalCompletion = true;
-                    return [
-                        3,
-                        2
-                    ];
-                case 6:
-                    return [
-                        3,
-                        9
-                    ];
-                case 7:
-                    err = _state.sent();
-                    _didIteratorError = true;
-                    _iteratorError = err;
-                    return [
-                        3,
-                        9
-                    ];
-                case 8:
-                    try {
-                        if (!_iteratorNormalCompletion && _iterator.return != null) {
-                            _iterator.return();
-                        }
-                    } finally{
-                        if (_didIteratorError) {
-                            throw _iteratorError;
-                        }
-                    }
-                    return [
-                        7
-                    ];
-                case 9:
-                    return [
-                        3,
-                        11
-                    ];
-                case 10:
-                    error = _state.sent();
-                    core_warning(_instanceof(error, Error) ? error.message : String(error));
-                    return [
-                        3,
-                        11
-                    ];
-                case 11:
                     return [
                         2
                     ];

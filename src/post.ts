@@ -21,24 +21,32 @@ export async function run(): Promise<void> {
     const triple = core.getState("setup-zig-triple");
     const version = core.getState("setup-zig-version");
     const buildHash = core.getState("setup-zig-build-hash");
+    const projectRoot =
+      core.getState("setup-zig-project-root") || process.cwd();
 
-    const targets = [
-      { dir: getZigGlobalCacheDir(), key: globalCacheKey(triple, version) },
-      {
-        dir: getZigLocalCacheDir(process.cwd()),
-        key: localCacheKey(triple, version, buildHash),
-      },
-    ];
-
-    for (const { dir, key } of targets) {
-      if (existsSync(dir)) {
-        await saveCache([dir], key);
-      } else {
-        core.info(`Skipping cache save: ${dir} does not exist`);
-      }
-    }
+    await saveIfExists(getZigGlobalCacheDir(), globalCacheKey(triple, version));
+    await saveIfExists(
+      getZigLocalCacheDir(projectRoot),
+      localCacheKey(triple, version, buildHash),
+    );
   } catch (error) {
     core.warning(error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function saveIfExists(dir: string, key: string): Promise<void> {
+  if (!existsSync(dir)) {
+    core.info(`Skipping cache save: ${dir} does not exist`);
+    return;
+  }
+  try {
+    await saveCache([dir], key);
+  } catch (error) {
+    core.warning(
+      `Failed to save cache '${key}': ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
   }
 }
 

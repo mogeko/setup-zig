@@ -94151,8 +94151,8 @@ function parseCacheMode(input) {
     var cacheHome = (_process_env_XDG_CACHE_HOME = process.env.XDG_CACHE_HOME) !== null && _process_env_XDG_CACHE_HOME !== void 0 ? _process_env_XDG_CACHE_HOME : external_node_path_default().join(external_node_os_default().homedir(), ".cache");
     return external_node_path_default().join(cacheHome, "zig");
 }
-/** Zig project-local cache directory (`.zig-cache` in the workspace). */ function getZigLocalCacheDir(workspace) {
-    return external_node_path_default().join(workspace, ".zig-cache");
+/** Zig project-local cache directory (`.zig-cache` under a project root). */ function getZigLocalCacheDir(projectDir) {
+    return external_node_path_default().join(projectDir, ".zig-cache");
 }
 function cache_restoreCache(paths, key, restoreKeys) {
     return _async_to_generator(function() {
@@ -94742,6 +94742,221 @@ function getZigTarget() {
     };
 }
 
+;// CONCATENATED MODULE: ./src/projects.ts
+function projects_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
+    }
+    if (info.done) resolve(value);
+    else Promise.resolve(value).then(_next, _throw);
+}
+function projects_async_to_generator(fn) {
+    return function() {
+        var self = this, args = arguments;
+        return new Promise(function(resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                projects_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                projects_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
+function projects_ts_generator(thisArg, body) {
+    var f, y, t, _ = {
+        label: 0,
+        sent: function() {
+            if (t[0] & 1) throw t[1];
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype), d = Object.defineProperty;
+    return d(g, "next", {
+        value: verb(0)
+    }), d(g, "throw", {
+        value: verb(1)
+    }), d(g, "return", {
+        value: verb(2)
+    }), typeof Symbol === "function" && d(g, Symbol.iterator, {
+        value: function() {
+            return this;
+        }
+    }), g;
+    function verb(n) {
+        return function(v) {
+            return step([
+                n,
+                v
+            ]);
+        };
+    }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while(g && (g = 0, op[0] && (_ = 0)), _)try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [
+                op[0] & 2,
+                t.value
+            ];
+            switch(op[0]){
+                case 0:
+                case 1:
+                    t = op;
+                    break;
+                case 4:
+                    _.label++;
+                    return {
+                        value: op[1],
+                        done: false
+                    };
+                case 5:
+                    _.label++;
+                    y = op[1];
+                    op = [
+                        0
+                    ];
+                    continue;
+                case 7:
+                    op = _.ops.pop();
+                    _.trys.pop();
+                    continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                        _ = 0;
+                        continue;
+                    }
+                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+                        _.label = op[1];
+                        break;
+                    }
+                    if (op[0] === 6 && _.label < t[1]) {
+                        _.label = t[1];
+                        t = op;
+                        break;
+                    }
+                    if (t && _.label < t[2]) {
+                        _.label = t[2];
+                        _.ops.push(op);
+                        break;
+                    }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop();
+                    continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) {
+            op = [
+                6,
+                e
+            ];
+            y = 0;
+        } finally{
+            f = t = 0;
+        }
+        if (op[0] & 5) throw op[1];
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
+        };
+    }
+}
+
+
+/**
+ * Returns the Zig project root — the nearest ancestor directory of `startDir`
+ * containing a `build.zig` file — matching Zig's own lookup order. Returns
+ * `undefined` when none is found.
+ */ function findProjectRoot(startDir) {
+    return projects_async_to_generator(function() {
+        var dir, parent;
+        return projects_ts_generator(this, function(_state) {
+            switch(_state.label){
+                case 0:
+                    dir = external_node_path_default().resolve(startDir);
+                    _state.label = 1;
+                case 1:
+                    return [
+                        4,
+                        hasBuildZig(dir)
+                    ];
+                case 2:
+                    if (_state.sent()) {
+                        return [
+                            2,
+                            dir
+                        ];
+                    }
+                    parent = external_node_path_default().dirname(dir);
+                    if (parent === dir) {
+                        return [
+                            2,
+                            undefined
+                        ];
+                    }
+                    dir = parent;
+                    _state.label = 3;
+                case 3:
+                    return [
+                        3,
+                        1
+                    ];
+                case 4:
+                    return [
+                        2
+                    ];
+            }
+        });
+    })();
+}
+function hasBuildZig(dir) {
+    return projects_async_to_generator(function() {
+        var entries, unused;
+        return projects_ts_generator(this, function(_state) {
+            switch(_state.label){
+                case 0:
+                    _state.trys.push([
+                        0,
+                        2,
+                        ,
+                        3
+                    ]);
+                    return [
+                        4,
+                        (0,promises_namespaceObject.readdir)(dir, {
+                            withFileTypes: true
+                        })
+                    ];
+                case 1:
+                    entries = _state.sent();
+                    return [
+                        2,
+                        entries.some(function(e) {
+                            return e.isFile() && e.name === "build.zig";
+                        })
+                    ];
+                case 2:
+                    unused = _state.sent();
+                    return [
+                        2,
+                        false
+                    ];
+                case 3:
+                    return [
+                        2
+                    ];
+            }
+        });
+    })();
+}
+
 ;// CONCATENATED MODULE: ./src/zon.ts
 function zon_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
@@ -94870,16 +95085,6 @@ function zon_ts_generator(thisArg, body) {
 }
 
 
-var zon_SKIP_DIRS = new Set([
-    "bin",
-    "build",
-    "dist",
-    "node_modules",
-    "obj",
-    "target",
-    "zig-cache",
-    "zig-out"
-]);
 /**
  * Extracts the `minimum_zig_version` field from a `build.zig.zon` file.
  * The field is declared as `.minimum_zig_version = "0.14.0"`.
@@ -94888,29 +95093,23 @@ var zon_SKIP_DIRS = new Set([
     return match === null || match === void 0 ? void 0 : match[1];
 }
 /**
- * Searches for `build.zig.zon` starting at `workspace` (root first, then
- * subdirectories depth-first) and returns its `minimum_zig_version`, if any.
- */ function readMinimumZigVersion(workspace) {
+ * Searches for `build.zig.zon` starting at `startDir` and walking up the
+ * parent directories (matching Zig's own lookup order). Returns the first
+ * `minimum_zig_version` found, if any.
+ */ function readMinimumZigVersion(startDir) {
     return zon_async_to_generator(function() {
-        return zon_ts_generator(this, function(_state) {
-            return [
-                2,
-                searchForMinimumZigVersion(workspace)
-            ];
-        });
-    })();
-}
-function searchForMinimumZigVersion(dir) {
-    return zon_async_to_generator(function() {
-        var version, entries, unused, subdirs, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, name, found, err;
+        var dir, version, parent;
         return zon_ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
+                    dir = external_node_path_default().resolve(startDir);
+                    _state.label = 1;
+                case 1:
                     return [
                         4,
                         tryReadMinimumZigVersion(external_node_path_default().join(dir, "build.zig.zon"))
                     ];
-                case 1:
+                case 2:
                     version = _state.sent();
                     if (version !== undefined) {
                         return [
@@ -94918,104 +95117,23 @@ function searchForMinimumZigVersion(dir) {
                             version
                         ];
                     }
-                    _state.label = 2;
-                case 2:
-                    _state.trys.push([
-                        2,
-                        4,
-                        ,
-                        5
-                    ]);
-                    return [
-                        4,
-                        (0,promises_namespaceObject.readdir)(dir, {
-                            withFileTypes: true
-                        })
-                    ];
-                case 3:
-                    entries = _state.sent();
-                    return [
-                        3,
-                        5
-                    ];
-                case 4:
-                    unused = _state.sent();
-                    return [
-                        2,
-                        undefined
-                    ];
-                case 5:
-                    subdirs = entries.filter(function(entry) {
-                        return entry.isDirectory() && !entry.name.startsWith(".") && !zon_SKIP_DIRS.has(entry.name);
-                    }).map(function(entry) {
-                        return entry.name;
-                    }).sort();
-                    _iteratorNormalCompletion = true, _didIteratorError = false, _iteratorError = undefined;
-                    _state.label = 6;
-                case 6:
-                    _state.trys.push([
-                        6,
-                        11,
-                        12,
-                        13
-                    ]);
-                    _iterator = subdirs[Symbol.iterator]();
-                    _state.label = 7;
-                case 7:
-                    if (!!(_iteratorNormalCompletion = (_step = _iterator.next()).done)) return [
-                        3,
-                        10
-                    ];
-                    name = _step.value;
-                    return [
-                        4,
-                        searchForMinimumZigVersion(external_node_path_default().join(dir, name))
-                    ];
-                case 8:
-                    found = _state.sent();
-                    if (found !== undefined) {
+                    parent = external_node_path_default().dirname(dir);
+                    if (parent === dir) {
                         return [
                             2,
-                            found
+                            undefined
                         ];
                     }
-                    _state.label = 9;
-                case 9:
-                    _iteratorNormalCompletion = true;
+                    dir = parent;
+                    _state.label = 3;
+                case 3:
                     return [
                         3,
-                        7
+                        1
                     ];
-                case 10:
+                case 4:
                     return [
-                        3,
-                        13
-                    ];
-                case 11:
-                    err = _state.sent();
-                    _didIteratorError = true;
-                    _iteratorError = err;
-                    return [
-                        3,
-                        13
-                    ];
-                case 12:
-                    try {
-                        if (!_iteratorNormalCompletion && _iterator.return != null) {
-                            _iterator.return();
-                        }
-                    } finally{
-                        if (_didIteratorError) {
-                            throw _iteratorError;
-                        }
-                    }
-                    return [
-                        7
-                    ];
-                case 13:
-                    return [
-                        2,
-                        undefined
+                        2
                     ];
             }
         });
@@ -95204,20 +95322,22 @@ function main_ts_generator(thisArg, body) {
 
 
 
+
 function main_run() {
     return main_async_to_generator(function() {
-        var requestedVersion, cacheMode, _getZigTarget, triple, ext, index, zonVersion, requested, resolved, download, cacheHit, installDir, archive, extracted, _tmp, _process_env_RUNNER_TEMP, tarballPath, tarballKey, restoredKey, extracted1, _tmp1, root, buildHash, globalDir, localDir, zig, error;
+        var requestedVersion, cacheMode, workdir, _getZigTarget, triple, ext, index, zonVersion, requested, resolved, download, cacheHit, installDir, archive, extracted, _tmp, _process_env_RUNNER_TEMP, tarballPath, tarballKey, restoredKey, extracted1, _tmp1, root, _ref, projectRoot, buildHash, zig, error;
         return main_ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
                     _state.trys.push([
                         0,
-                        30,
+                        31,
                         ,
-                        31
+                        32
                     ]);
                     requestedVersion = getInput("version");
                     cacheMode = parseCacheMode(getInput("cache"));
+                    workdir = process.cwd();
                     _getZigTarget = getZigTarget(), triple = _getZigTarget.triple, ext = _getZigTarget.ext;
                     return [
                         4,
@@ -95227,7 +95347,7 @@ function main_run() {
                     index = _state.sent();
                     return [
                         4,
-                        readMinimumZigVersion(process.cwd())
+                        readMinimumZigVersion(workdir)
                     ];
                 case 2:
                     zonVersion = _state.sent();
@@ -95387,38 +95507,43 @@ function main_run() {
                 case 24:
                     if (!(cacheMode === "all")) return [
                         3,
-                        28
+                        29
                     ];
                     return [
                         4,
-                        hashBuildInputs(process.cwd())
+                        findProjectRoot(workdir)
                     ];
                 case 25:
+                    projectRoot = (_ref = _state.sent()) !== null && _ref !== void 0 ? _ref : workdir;
+                    return [
+                        4,
+                        hashBuildInputs(projectRoot)
+                    ];
+                case 26:
                     buildHash = _state.sent();
-                    globalDir = getZigGlobalCacheDir();
-                    localDir = getZigLocalCacheDir(process.cwd());
                     return [
                         4,
                         cache_restoreCache([
-                            globalDir
+                            getZigGlobalCacheDir()
                         ], globalCacheKey(triple, resolved.version))
                     ];
-                case 26:
+                case 27:
                     _state.sent();
                     return [
                         4,
                         cache_restoreCache([
-                            localDir
+                            getZigLocalCacheDir(projectRoot)
                         ], localCacheKey(triple, resolved.version, buildHash), localCacheRestoreKeys(triple, resolved.version))
                     ];
-                case 27:
+                case 28:
                     _state.sent();
                     saveState("setup-zig-cache-mode", cacheMode);
                     saveState("setup-zig-triple", triple);
                     saveState("setup-zig-version", resolved.version);
                     saveState("setup-zig-build-hash", buildHash);
-                    _state.label = 28;
-                case 28:
+                    saveState("setup-zig-project-root", projectRoot);
+                    _state.label = 29;
+                case 29:
                     addPath(installDir);
                     core_info("Added ".concat(installDir, " to PATH"));
                     zig = process.platform === "win32" ? "zig.exe" : "zig";
@@ -95428,23 +95553,23 @@ function main_run() {
                             "version"
                         ])
                     ];
-                case 29:
+                case 30:
                     _state.sent();
                     setOutput("version", resolved.version);
                     setOutput("path", installDir);
                     setOutput("cache-hit", cacheHit.toString());
                     return [
                         3,
-                        31
+                        32
                     ];
-                case 30:
+                case 31:
                     error = _state.sent();
                     setFailed(_instanceof(error, Error) ? error : String(error));
                     return [
                         3,
-                        31
+                        32
                     ];
-                case 31:
+                case 32:
                     return [
                         2
                     ];
