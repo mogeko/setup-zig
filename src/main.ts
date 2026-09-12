@@ -27,13 +27,13 @@ export async function run(): Promise<void> {
 
     const index = await fetchIndex();
 
-    const requested =
-      requestedVersion ||
-      (await readMinimumZigVersion(process.cwd())) ||
-      "latest";
+    const zonVersion = await readMinimumZigVersion(process.cwd());
+    const requested = requestedVersion || zonVersion || "latest";
     if (!requestedVersion) {
       core.info(
-        `No version input; resolved "${requested}" from build.zig.zon or fallback`,
+        zonVersion
+          ? `No version input; detected "${zonVersion}" from build.zig.zon`
+          : 'No version input and no build.zig.zon found; falling back to "latest"',
       );
     }
     const resolved = resolveVersion(requested, index);
