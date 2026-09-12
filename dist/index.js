@@ -37054,6 +37054,17 @@ function getIDToken(aud) {
  */
 
 //# sourceMappingURL=core.js.map
+// EXTERNAL MODULE: external "node:crypto"
+var external_node_crypto_ = __webpack_require__(7598);
+;// CONCATENATED MODULE: external "node:fs"
+const external_node_fs_namespaceObject = __rspack_createRequire_require("node:fs");
+;// CONCATENATED MODULE: external "node:fs/promises"
+const promises_namespaceObject = __rspack_createRequire_require("node:fs/promises");
+;// CONCATENATED MODULE: external "node:path"
+const external_node_path_namespaceObject = __rspack_createRequire_require("node:path");
+var external_node_path_default = /*#__PURE__*/__webpack_require__.n(external_node_path_namespaceObject);
+;// CONCATENATED MODULE: external "node:stream/promises"
+const external_node_stream_promises_namespaceObject = __rspack_createRequire_require("node:stream/promises");
 // EXTERNAL MODULE: ./node_modules/.pnpm/semver@7.8.5/node_modules/semver/index.js
 var node_modules_semver = __webpack_require__(3115);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+tool-cache@4.0.0/node_modules/@actions/tool-cache/lib/manifest.js
@@ -37854,17 +37865,9 @@ function _unique(values) {
     return Array.from(new Set(values));
 }
 //# sourceMappingURL=tool-cache.js.map
-// EXTERNAL MODULE: external "node:crypto"
-var external_node_crypto_ = __webpack_require__(7598);
-;// CONCATENATED MODULE: external "node:fs"
-const external_node_fs_namespaceObject = __rspack_createRequire_require("node:fs");
-;// CONCATENATED MODULE: external "node:fs/promises"
-const promises_namespaceObject = __rspack_createRequire_require("node:fs/promises");
-;// CONCATENATED MODULE: external "node:path"
-const external_node_path_namespaceObject = __rspack_createRequire_require("node:path");
-var external_node_path_default = /*#__PURE__*/__webpack_require__.n(external_node_path_namespaceObject);
-;// CONCATENATED MODULE: external "node:stream/promises"
-const external_node_stream_promises_namespaceObject = __rspack_createRequire_require("node:stream/promises");
+;// CONCATENATED MODULE: external "node:os"
+const external_node_os_namespaceObject = __rspack_createRequire_require("node:os");
+var external_node_os_default = /*#__PURE__*/__webpack_require__.n(external_node_os_namespaceObject);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@actions+glob@0.6.1/node_modules/@actions/glob/lib/internal-glob-options-helper.js
 
 /**
@@ -39084,9 +39087,6 @@ class AbortError extends Error {
     }
 }
 //# sourceMappingURL=AbortError.js.map
-;// CONCATENATED MODULE: external "node:os"
-const external_node_os_namespaceObject = __rspack_createRequire_require("node:os");
-var external_node_os_default = /*#__PURE__*/__webpack_require__.n(external_node_os_namespaceObject);
 // EXTERNAL MODULE: external "node:util"
 var external_node_util_ = __webpack_require__(7975);
 ;// CONCATENATED MODULE: external "node:process"
@@ -94622,8 +94622,8 @@ function zon_ts_generator(thisArg, body) {
     })();
 }
 
-;// CONCATENATED MODULE: ./src/index.ts
-function src_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+;// CONCATENATED MODULE: ./src/main.ts
+function main_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
         var value = info.value;
@@ -94634,28 +94634,22 @@ function src_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     if (info.done) resolve(value);
     else Promise.resolve(value).then(_next, _throw);
 }
-function src_async_to_generator(fn) {
+function main_async_to_generator(fn) {
     return function() {
         var self = this, args = arguments;
         return new Promise(function(resolve, reject) {
             var gen = fn.apply(self, args);
             function _next(value) {
-                src_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+                main_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
             }
             function _throw(err) {
-                src_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+                main_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
             }
             _next(undefined);
         });
     };
 }
-function _instanceof(left, right) {
-    "@swc/helpers - instanceof";
-    if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
-        return !!right[Symbol.hasInstance](left);
-    } else return left instanceof right;
-}
-function src_ts_generator(thisArg, body) {
+function main_ts_generator(thisArg, body) {
     var f, y, t, _ = {
         label: 0,
         sent: function() {
@@ -94766,10 +94760,10 @@ function src_ts_generator(thisArg, body) {
 
 
 
-function src_run() {
-    return src_async_to_generator(function() {
+function main_run() {
+    return main_async_to_generator(function() {
         var requestedVersion, cacheMode, _getZigTarget, triple, ext, index, requested, _tmp, resolved, download, cacheHit, installDir, archive, extracted, _tmp1, root, zig;
-        return src_ts_generator(this, function(_state) {
+        return main_ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
                     requestedVersion = getInput("version");
@@ -94911,9 +94905,9 @@ function src_run() {
     })();
 }
 function verifySha256(file, expected) {
-    return src_async_to_generator(function() {
+    return main_async_to_generator(function() {
         var hash, actual;
-        return src_ts_generator(this, function(_state) {
+        return main_ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
                     hash = (0,external_node_crypto_.createHash)("sha256");
@@ -94935,9 +94929,9 @@ function verifySha256(file, expected) {
     })();
 }
 function findZigRoot(extracted) {
-    return src_async_to_generator(function() {
+    return main_async_to_generator(function() {
         var entries, dirs, zigName;
-        return src_ts_generator(this, function(_state) {
+        return main_ts_generator(this, function(_state) {
             switch(_state.label){
                 case 0:
                     return [
@@ -94973,7 +94967,17 @@ function findZigRoot(extracted) {
         });
     })();
 }
-src_run().catch(function(error) {
+
+;// CONCATENATED MODULE: ./src/index.ts
+function _instanceof(left, right) {
+    "@swc/helpers - instanceof";
+    if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) {
+        return !!right[Symbol.hasInstance](left);
+    } else return left instanceof right;
+}
+
+
+main_run().catch(function(error) {
     setFailed(_instanceof(error, Error) ? error : String(error));
 });
 

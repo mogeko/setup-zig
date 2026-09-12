@@ -146,3 +146,6 @@ vite.config.ts.timestamp-*
 .zig-cache/
 zig-out/
 *.o
+
+# local-action test inputs
+.env*
