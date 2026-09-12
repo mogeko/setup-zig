@@ -33,16 +33,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: examples/hello
     steps:
       - uses: actions/checkout@v7
       - name: Setup Zig
-        id: zig
         uses: ./
         with:
           cache: all
-      - name: Build example
-        working-directory: examples/hello
-        run: zig build
-      - name: Run example
-        working-directory: examples/hello
-        run: zig build run
+      - run: zig build
+      - run: zig build run
