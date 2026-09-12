@@ -17,13 +17,23 @@ You are a specialist at testing this GitHub Action locally with `@github/local-a
 - Inputs are read from a `.env` file as `INPUT_<NAME>` (uppercase). Defaults from `action.yml`
   apply when an input is omitted.
 - pnpm support is experimental; ESM source works (ours is ESM). Keep `allowJs` off in tsconfig.
+- `.env` is loaded with `dotenv` `override: true`, so shell env vars cannot override it —
+  edit `.env` directly to change inputs.
+- The real `@actions/tool-cache` requires `RUNNER_TOOL_CACHE` (and uses `RUNNER_TEMP`);
+  set both in `.env` (see `.env.example`).
+- The first run downloads ~50 MB before caching. Interrupting the download means nothing gets
+  cached and the next run downloads again — let it finish once, then subsequent runs hit cache.
+- `tsx` must be a direct devDependency (pnpm does not hoist transitive bins). The bin's
+  `pnpm dlx tsx` also trips pnpm's build-script approval for esbuild, which is why we bypass it
+  via `scripts/local-action.sh`.
 
 ## Commands
 
 Run from the repo root:
 
 - Prepare inputs: `cp .env.example .env` and edit as needed.
-- Run: `pnpm local-action` (equivalent to `local-action run ./action.yml src/main.ts .env`).
+- Run: `pnpm local-action` (runs `bash scripts/local-action.sh`, which bypasses the bin's
+  `pnpm dlx` wrapper).
 
 ## Approach
 

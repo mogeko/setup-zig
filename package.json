@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rspack build",
     "fmt": "biome format --write .",
-    "local-action": "local-action run ./action.yml src/main.ts .env",
+    "local-action": "bash scripts/local-action.sh",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
@@ -24,6 +24,7 @@
     "@github/local-action": "^7.0.1",
     "@rspack/cli": "^2.2.3",
     "@types/node": "^22.20.2",
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2",
     "vitest": "^5.0.0"
   },
