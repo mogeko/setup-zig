@@ -1,8 +1,8 @@
 import {
   createHash,
   generateKeyPairSync,
-  sign,
   type KeyObject,
+  sign,
 } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -29,8 +29,7 @@ function buildSignature(
   ]).toString("base64");
 
   const digest = createHash("blake2b512").update(content).digest();
-  const signedMessage = Buffer.concat([Buffer.from("ED", "ascii"), digest]);
-  const ed25519Signature = sign(null, signedMessage, privateKey);
+  const ed25519Signature = sign(null, digest, privateKey);
 
   const signatureText = [
     "untrusted comment: test",

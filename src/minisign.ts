@@ -42,7 +42,6 @@ export async function verifyMinisign(
   }
 
   const digest = await blake2b512(filePath);
-  const signedMessage = Buffer.concat([Buffer.from("ED", "ascii"), digest]);
 
   const keyObject = createPublicKey({
     key: Buffer.concat([ED25519_SPKI_PREFIX, ed25519PublicKey]),
@@ -50,7 +49,8 @@ export async function verifyMinisign(
     type: "spki",
   });
 
-  if (!verify(null, signedMessage, keyObject, ed25519Signature)) {
+  // minisign's prehashed mode signs the BLAKE2b-512 digest directly.
+  if (!verify(null, digest, keyObject, ed25519Signature)) {
     throw new Error("minisign signature verification failed");
   }
 }

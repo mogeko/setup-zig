@@ -91,7 +91,12 @@ export async function run(): Promise<void> {
         } else {
           info(`Downloading Zig ${resolved.version} from ${download.tarball}`);
           await downloadTool(download.tarball, tarballPath);
-          await verifyTarball(tarballPath, download);
+        }
+
+        // Verify the tarball whether it was downloaded or restored from cache.
+        await verifyTarball(tarballPath, download);
+
+        if (!restoredKey) {
           await saveCache([tarballPath], tarballKey);
         }
         const extracted =

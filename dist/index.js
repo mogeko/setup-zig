@@ -94846,7 +94846,7 @@ function minisign_ts_generator(thisArg, body) {
  * BLAKE2b-512, then the digest is verified with Ed25519.
  */ function verifyMinisign(_0, _1) {
     return minisign_async_to_generator(function(filePath, signatureText) {
-        var publicKey, signature, algorithm, signatureKeyId, ed25519Signature, publicKeyBytes, publicKeyId, ed25519PublicKey, digest, signedMessage, keyObject;
+        var publicKey, signature, algorithm, signatureKeyId, ed25519Signature, publicKeyBytes, publicKeyId, ed25519PublicKey, digest, keyObject;
         var _arguments = arguments;
         return minisign_ts_generator(this, function(_state) {
             switch(_state.label){
@@ -94871,10 +94871,6 @@ function minisign_ts_generator(thisArg, body) {
                     ];
                 case 1:
                     digest = _state.sent();
-                    signedMessage = Buffer.concat([
-                        Buffer.from("ED", "ascii"),
-                        digest
-                    ]);
                     keyObject = (0,external_node_crypto_.createPublicKey)({
                         key: Buffer.concat([
                             ED25519_SPKI_PREFIX,
@@ -94883,7 +94879,8 @@ function minisign_ts_generator(thisArg, body) {
                         format: "der",
                         type: "spki"
                     });
-                    if (!(0,external_node_crypto_.verify)(null, signedMessage, keyObject, ed25519Signature)) {
+                    // minisign's prehashed mode signs the BLAKE2b-512 digest directly.
+                    if (!(0,external_node_crypto_.verify)(null, digest, keyObject, ed25519Signature)) {
                         throw new Error("minisign signature verification failed");
                     }
                     return [
@@ -95581,9 +95578,9 @@ function main_run() {
                 case 0:
                     _state.trys.push([
                         0,
-                        31,
+                        32,
                         ,
-                        32
+                        33
                     ]);
                     requestedVersion = getInput("version");
                     cacheMode = parseCacheMode(getInput("cache"));
@@ -95658,7 +95655,7 @@ function main_run() {
                     installDir = _state.sent();
                     return [
                         3,
-                        24
+                        25
                     ];
                 case 10:
                     installDir = find("zig", resolved.version, process.arch);
@@ -95670,7 +95667,7 @@ function main_run() {
                     core_info("Found Zig ".concat(resolved.version, " in tool cache"));
                     return [
                         3,
-                        24
+                        25
                     ];
                 case 11:
                     tarballPath = external_node_path_default().join((_process_env_RUNNER_TEMP = process.env.RUNNER_TEMP) !== null && _process_env_RUNNER_TEMP !== void 0 ? _process_env_RUNNER_TEMP : external_node_os_default().tmpdir(), "zig-".concat(triple, "-").concat(resolved.version, ".").concat(ext));
@@ -95691,7 +95688,7 @@ function main_run() {
                     core_info("Restored Zig tarball from cache (".concat(restoredKey, ")"));
                     return [
                         3,
-                        17
+                        15
                     ];
                 case 13:
                     core_info("Downloading Zig ".concat(resolved.version, " from ").concat(download.tarball));
@@ -95701,75 +95698,82 @@ function main_run() {
                     ];
                 case 14:
                     _state.sent();
+                    _state.label = 15;
+                case 15:
+                    // Verify the tarball whether it was downloaded or restored from cache.
                     return [
                         4,
                         verifyTarball(tarballPath, download)
                     ];
-                case 15:
+                case 16:
                     _state.sent();
+                    if (!!restoredKey) return [
+                        3,
+                        18
+                    ];
                     return [
                         4,
                         src_cache_saveCache([
                             tarballPath
                         ], tarballKey)
                     ];
-                case 16:
-                    _state.sent();
-                    _state.label = 17;
                 case 17:
+                    _state.sent();
+                    _state.label = 18;
+                case 18:
                     if (!(ext === "zip")) return [
                         3,
-                        19
+                        20
                     ];
                     return [
                         4,
                         extractZip(tarballPath)
                     ];
-                case 18:
+                case 19:
                     _tmp1 = _state.sent();
                     return [
                         3,
-                        21
+                        22
                     ];
-                case 19:
+                case 20:
                     return [
                         4,
                         extractTar(tarballPath, undefined, "xJ")
                     ];
-                case 20:
-                    _tmp1 = _state.sent();
-                    _state.label = 21;
                 case 21:
+                    _tmp1 = _state.sent();
+                    _state.label = 22;
+                case 22:
                     extracted1 = _tmp1;
                     return [
                         4,
                         findZigRoot(extracted1)
                     ];
-                case 22:
+                case 23:
                     root = _state.sent();
                     return [
                         4,
                         cacheDir(root, "zig", resolved.version, process.arch)
                     ];
-                case 23:
-                    installDir = _state.sent();
-                    _state.label = 24;
                 case 24:
+                    installDir = _state.sent();
+                    _state.label = 25;
+                case 25:
                     if (!(cacheMode === "all")) return [
                         3,
-                        29
+                        30
                     ];
                     return [
                         4,
                         findProjectRoot(workdir)
                     ];
-                case 25:
+                case 26:
                     projectRoot = (_ref = _state.sent()) !== null && _ref !== void 0 ? _ref : workdir;
                     return [
                         4,
                         hashBuildInputs(projectRoot)
                     ];
-                case 26:
+                case 27:
                     buildHash = _state.sent();
                     return [
                         4,
@@ -95777,7 +95781,7 @@ function main_run() {
                             getZigGlobalCacheDir()
                         ], globalCacheKey(triple, resolved.version))
                     ];
-                case 27:
+                case 28:
                     _state.sent();
                     return [
                         4,
@@ -95785,15 +95789,15 @@ function main_run() {
                             getZigLocalCacheDir(projectRoot)
                         ], localCacheKey(triple, resolved.version, buildHash), localCacheRestoreKeys(triple, resolved.version))
                     ];
-                case 28:
+                case 29:
                     _state.sent();
                     saveState("setup-zig-cache-mode", cacheMode);
                     saveState("setup-zig-triple", triple);
                     saveState("setup-zig-version", resolved.version);
                     saveState("setup-zig-build-hash", buildHash);
                     saveState("setup-zig-project-root", projectRoot);
-                    _state.label = 29;
-                case 29:
+                    _state.label = 30;
+                case 30:
                     addPath(installDir);
                     core_info("Added ".concat(installDir, " to PATH"));
                     zig = process.platform === "win32" ? "zig.exe" : "zig";
@@ -95803,23 +95807,23 @@ function main_run() {
                             "version"
                         ])
                     ];
-                case 30:
+                case 31:
                     _state.sent();
                     setOutput("version", resolved.version);
                     setOutput("path", installDir);
                     setOutput("cache-hit", cacheHit.toString());
                     return [
                         3,
-                        32
+                        33
                     ];
-                case 31:
+                case 32:
                     error = _state.sent();
                     setFailed(_instanceof(error, Error) ? error : String(error));
                     return [
                         3,
-                        32
+                        33
                     ];
-                case 32:
+                case 33:
                     return [
                         2
                     ];
