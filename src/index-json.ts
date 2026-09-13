@@ -77,8 +77,7 @@ function matchVersionPrefix(prefix: string, index: ZigIndex): string {
       `Zig version "${prefix}" is not available. Recent versions: ${listVersions(index)}`,
     );
   }
-  candidates.sort(compareSemver);
-  return candidates[candidates.length - 1]!;
+  return candidates.reduce((a, b) => (compareSemver(a, b) > 0 ? a : b));
 }
 
 export function latestStable(index: ZigIndex): string {
@@ -88,8 +87,7 @@ export function latestStable(index: ZigIndex): string {
   if (versions.length === 0) {
     throw new Error("No stable Zig versions found in the download index");
   }
-  versions.sort(compareSemver);
-  return versions[versions.length - 1]!;
+  return versions.reduce((a, b) => (compareSemver(a, b) > 0 ? a : b));
 }
 
 export function getDownloadFile(

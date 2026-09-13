@@ -175,8 +175,9 @@ async function verifySha256(file: string, expected: string): Promise<void> {
 async function findZigRoot(extracted: string): Promise<string> {
   const entries = await readdir(extracted, { withFileTypes: true });
   const dirs = entries.filter((entry) => entry.isDirectory());
-  if (dirs.length === 1) {
-    return path.join(extracted, dirs[0]!.name);
+  const [dir] = dirs;
+  if (dir !== undefined && dirs.length === 1) {
+    return path.join(extracted, dir.name);
   }
   const zigName = process.platform === "win32" ? "zig.exe" : "zig";
   if (entries.some((entry) => entry.isFile() && entry.name === zigName)) {

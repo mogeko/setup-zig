@@ -548,16 +548,14 @@ function matchVersionPrefix(prefix, index) {
   if (candidates.length === 0) {
     throw new Error(`Zig version "${prefix}" is not available. Recent versions: ${listVersions(index)}`);
   }
-  candidates.sort(compareSemver);
-  return candidates[candidates.length - 1];
+  return candidates.reduce((a, b) => compareSemver(a, b) > 0 ? a : b);
 }
 function latestStable(index) {
   const versions = Object.keys(index).filter((key) => key !== "master" && isSemver(key));
   if (versions.length === 0) {
     throw new Error("No stable Zig versions found in the download index");
   }
-  versions.sort(compareSemver);
-  return versions[versions.length - 1];
+  return versions.reduce((a, b) => compareSemver(a, b) > 0 ? a : b);
 }
 function getDownloadFile(index, versionKey, triple) {
   const entry = index[versionKey];
@@ -826,8 +824,9 @@ async function verifySha256(file, expected) {
 async function findZigRoot(extracted) {
   const entries = await readdir3(extracted, { withFileTypes: true });
   const dirs = entries.filter((entry) => entry.isDirectory());
-  if (dirs.length === 1) {
-    return path5.join(extracted, dirs[0].name);
+  const [dir] = dirs;
+  if (dir !== undefined && dirs.length === 1) {
+    return path5.join(extracted, dir.name);
   }
   const zigName = process.platform === "win32" ? "zig.exe" : "zig";
   if (entries.some((entry) => entry.isFile() && entry.name === zigName)) {
