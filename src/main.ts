@@ -33,6 +33,7 @@ import {
 } from "./cache";
 import { hashBuildInputs } from "./hash";
 import { fetchIndex, getDownloadFile, resolveVersion } from "./index-json";
+import { verifyMinisign } from "./minisign";
 import { getZigTarget } from "./platform";
 import { findProjectRoot } from "./projects";
 import { readMinimumZigVersion } from "./zon";
@@ -66,7 +67,7 @@ export async function run(): Promise<void> {
     if (cacheMode === "false") {
       info(`Downloading Zig ${resolved.version} from ${download.tarball}`);
       const archive = await downloadTool(download.tarball);
-      await verifySha256(archive, download.shasum);
+      await verifyTarball(archive, download);
       const extracted =
         ext === "zip"
           ? await extractZip(archive)
@@ -90,7 +91,12 @@ export async function run(): Promise<void> {
         } else {
           info(`Downloading Zig ${resolved.version} from ${download.tarball}`);
           await downloadTool(download.tarball, tarballPath);
-          await verifySha256(tarballPath, download.shasum);
+        }
+
+        // Verify the tarball whether it was downloaded or restored from cache.
+        await verifyTarball(tarballPath, download);
+
+        if (!restoredKey) {
           await saveCache([tarballPath], tarballKey);
         }
         const extracted =
@@ -139,6 +145,22 @@ export async function run(): Promise<void> {
   } catch (error) {
     setFailed(error instanceof Error ? error : String(error));
   }
+}
+
+async function verifyTarball(
+  file: string,
+  download: { tarball: string; shasum: string },
+): Promise<void> {
+  await verifySha256(file, download.shasum);
+
+  info("Verifying tarball signature with minisign");
+  const response = await fetch(`${download.tarball}.minisig`);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch minisign signature: ${response.status} ${response.statusText}`,
+    );
+  }
+  await verifyMinisign(file, await response.text());
 }
 
 async function verifySha256(file: string, expected: string): Promise<void> {
