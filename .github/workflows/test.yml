@@ -6,7 +6,18 @@ on:
   pull_request:
 
 jobs:
-  test:
+  unit-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          cache: true
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm biome ci
+      - run: pnpm run test
+
+  integration-testing:
     strategy:
       fail-fast: false
       matrix:
