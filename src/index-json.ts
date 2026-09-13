@@ -55,13 +55,30 @@ export function resolveVersion(
   } else if (index[requested]) {
     key = requested;
   } else {
-    throw new Error(
-      `Zig version "${requested}" is not available. Recent versions: ${listVersions(index)}`,
-    );
+    key = matchVersionPrefix(requested, index);
   }
 
   const version = key === "master" ? (index.master.version ?? "master") : key;
   return { key, version };
+}
+
+/**
+ * Matches a partial version such as "0.16" or "0.16.x" to the highest
+ * available "0.16.*" release in the index.
+ */
+function matchVersionPrefix(prefix: string, index: ZigIndex): string {
+  const normalized = prefix.replace(/[.xX*]+$/, "");
+  const candidates = Object.keys(index).filter(
+    (key) =>
+      key !== "master" && isSemver(key) && key.startsWith(`${normalized}.`),
+  );
+  if (candidates.length === 0) {
+    throw new Error(
+      `Zig version "${prefix}" is not available. Recent versions: ${listVersions(index)}`,
+    );
+  }
+  candidates.sort(compareSemver);
+  return candidates[candidates.length - 1];
 }
 
 export function latestStable(index: ZigIndex): string {

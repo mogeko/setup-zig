@@ -94651,13 +94651,27 @@ function resolveVersion(requested, index) {
     } else if (index[requested]) {
         key = requested;
     } else {
-        throw new Error('Zig version "'.concat(requested, '" is not available. Recent versions: ').concat(listVersions(index)));
+        key = matchVersionPrefix(requested, index);
     }
     var version = key === "master" ? (_index_master_version = index.master.version) !== null && _index_master_version !== void 0 ? _index_master_version : "master" : key;
     return {
         key: key,
         version: version
     };
+}
+/**
+ * Matches a partial version such as "0.16" or "0.16.x" to the highest
+ * available "0.16.*" release in the index.
+ */ function matchVersionPrefix(prefix, index) {
+    var normalized = prefix.replace(/[.xX*]+$/, "");
+    var candidates = Object.keys(index).filter(function(key) {
+        return key !== "master" && isSemver(key) && key.startsWith("".concat(normalized, "."));
+    });
+    if (candidates.length === 0) {
+        throw new Error('Zig version "'.concat(prefix, '" is not available. Recent versions: ').concat(listVersions(index)));
+    }
+    candidates.sort(compareSemver);
+    return candidates[candidates.length - 1];
 }
 function latestStable(index) {
     var versions = Object.keys(index).filter(function(key) {

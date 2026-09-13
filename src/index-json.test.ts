@@ -65,3 +65,28 @@ describe("getDownloadFile", () => {
     );
   });
 });
+
+describe("resolveVersion with partial versions", () => {
+  const partialIndex: ZigIndex = {
+    "0.16.0": { "x86_64-linux": { tarball: "t0", shasum: "s0" } },
+    "0.16.1": { "x86_64-linux": { tarball: "t1", shasum: "s1" } },
+    "0.16.10": { "x86_64-linux": { tarball: "t10", shasum: "s10" } },
+    "0.160.0": { "x86_64-linux": { tarball: "t160", shasum: "s160" } },
+    "0.17.0": { "x86_64-linux": { tarball: "t17", shasum: "s17" } },
+  };
+
+  it("resolves 0.16 to the highest 0.16.x", () => {
+    expect(resolveVersion("0.16", partialIndex)).toEqual({
+      key: "0.16.10",
+      version: "0.16.10",
+    });
+  });
+
+  it("resolves 0.16.x to the highest 0.16.x", () => {
+    expect(resolveVersion("0.16.x", partialIndex).key).toBe("0.16.10");
+  });
+
+  it("throws when no version matches the prefix", () => {
+    expect(() => resolveVersion("0.99", partialIndex)).toThrow(/not available/);
+  });
+});

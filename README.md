@@ -21,7 +21,7 @@ When `version` is not specified, it will try the following in order:
 
 | Input | Default value | Description |
 |------|--------|------|
-| `version` | Auto-detect | Zig version, such as `0.16.0` or `master` |
+| `version` | Auto-detect | Exact (`0.16.0`), partial (`0.16` → latest `0.16.x`), `master`, or `latest` |
 | `cache` | `binary` | `binary` only caches the toolchain; `all` additionally caches Zig global/project compilation caches; `false` disables caching |
 
 ## Output
