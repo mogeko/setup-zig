@@ -1,3 +1,4 @@
+import { describe, expect, it } from "bun:test";
 import {
   createHash,
   generateKeyPairSync,
@@ -7,7 +8,6 @@ import {
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "@rstest/core";
 import { verifyMinisign } from "./minisign";
 
 const KEY_ID = Buffer.from("0123456789abcdef", "hex");

@@ -539,7 +539,7 @@ function resolveVersion(requested, index) {
   } else {
     key = matchVersionPrefix(requested, index);
   }
-  const version = key === "master" ? index.master.version ?? "master" : key;
+  const version = key === "master" ? index.master?.version ?? "master" : key;
   return { key, version };
 }
 function matchVersionPrefix(prefix, index) {

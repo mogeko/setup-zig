@@ -6,7 +6,7 @@
   "scripts": {
     "build": "bun run build.ts",
     "fmt": "biome format --write .",
-    "test": "rstest",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
-    "@rstest/core": "^0.11.12",
     "@types/bun": "^1.4.2",
     "@types/node": "^22.20.2",
     "typescript": "^7.0.2"

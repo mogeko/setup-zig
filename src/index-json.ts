@@ -58,7 +58,7 @@ export function resolveVersion(
     key = matchVersionPrefix(requested, index);
   }
 
-  const version = key === "master" ? (index.master.version ?? "master") : key;
+  const version = key === "master" ? (index.master?.version ?? "master") : key;
   return { key, version };
 }
 
@@ -78,7 +78,7 @@ function matchVersionPrefix(prefix: string, index: ZigIndex): string {
     );
   }
   candidates.sort(compareSemver);
-  return candidates[candidates.length - 1];
+  return candidates[candidates.length - 1]!;
 }
 
 export function latestStable(index: ZigIndex): string {
@@ -89,7 +89,7 @@ export function latestStable(index: ZigIndex): string {
     throw new Error("No stable Zig versions found in the download index");
   }
   versions.sort(compareSemver);
-  return versions[versions.length - 1];
+  return versions[versions.length - 1]!;
 }
 
 export function getDownloadFile(
