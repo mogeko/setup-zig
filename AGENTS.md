@@ -10,17 +10,17 @@ and bundled to a single `dist/index.js` that the runner executes.
 ## Stack & Tooling
 
 - **Language**: TypeScript, compiled/bundled to JavaScript, **ESM only** (`"type": "module"`). Use `import` / `export`, never `require`.
-- **Package manager**: **pnpm@12.4.1** (enforced by `packageManager` + `devEngines`). Never run `npm install` / `yarn`.
-- **Formatter**: **Biome** — format with `pnpm exec biome format --write .`; config lives in `biome.json`.
-- **Runtime**: Node.js >= 24.
+- **Package manager**: **bun@1.4.2** (enforced by `packageManager` + `devEngines`). Never run `npm install` / `yarn` / `pnpm`.
+- **Formatter**: **Biome** — format with `bunx biome format --write .`; config lives in `biome.json`.
+- **Runtime**: Bun for build/test tooling. The action itself runs on Node.js 24 via `runs.using: node24`.
 - **Entry point**: `dist/index.js` — the **committed** bundle produced by the build step. Do not edit `dist/` by hand.
 
 ## Commands
 
-- Install dependencies: `pnpm install`
-- Build: `pnpm build` (bundles TypeScript source to `dist/index.js`)
-- Format: `pnpm exec biome format --write .`
-- Tests: none defined yet (package.json has a stub).
+- Install dependencies: `bun install`
+- Build: `bun run build` (bundles TypeScript source to `dist/index.js` and `dist/post.js`)
+- Format: `bunx biome format --write .`
+- Tests: `bun run test` (rstest)
 
 ## Conventions
 
@@ -32,17 +32,17 @@ and bundled to a single `dist/index.js` that the runner executes.
 
 ## Pitfalls
 
-- Bundle with `@vercel/ncc` (or equivalent) into `dist/index.js` and **commit** that file —
-  the runner executes it directly and cannot install dependencies. Keep build/lint tooling
+- Bundle with `bun build` into `dist/index.js` and `dist/post.js` and **commit** those files —
+  the runner executes them directly and cannot install dependencies. Keep build/lint tooling
   out of the bundle.
 - The repo root must contain an `action.yml` (or `action.yaml`) declaring inputs, outputs, and
   `runs.using: node24` + `runs.main: dist/index.js`. This is the action's public contract.
 - `core.addPath()` must be called so `zig` is available to subsequent workflow steps.
-- Rebuild (`pnpm build`) before committing any change to `src/` so `dist/index.js` stays in sync.
+- Rebuild (`bun run build`) before committing any change to `src/` so `dist/index.js` stays in sync.
 
 ## Key Files
 
-- `package.json` — metadata, build/format scripts, pnpm/Node constraints.
+- `package.json` — metadata, build/format scripts, bun constraints.
 - `src/` (to be created) — TypeScript source.
 - `dist/index.js` — committed build output that the runner executes.
 - `action.yml` (to be created) — action inputs/outputs and runtime declaration.

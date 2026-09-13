@@ -40,10 +40,10 @@ case "$file_path" in
 esac
 
 echo "src changed ($file_path); rebuilding dist/index.js ..."
-pnpm build
+bun run build
 
 if [ ! -f dist/index.js ]; then
-  echo "ERROR: pnpm build did not produce dist/index.js" >&2
+  echo "ERROR: bun run build did not produce dist/index.js" >&2
   exit 2
 fi
 

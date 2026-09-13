@@ -35,8 +35,8 @@ When `version` is not specified, it will try the following in order:
 ## Development
 
 ```sh
-pnpm install
-pnpm typecheck
-pnpm test
-pnpm build    # Produce dist/index.js and dist/post.js, both of which must be submitted together.
+bun install
+bun run typecheck
+bun run test
+bun run build    # Produce dist/index.js and dist/post.js, both of which must be committed together.
 ```
