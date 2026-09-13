@@ -10,12 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-        with:
-          cache: true
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm biome ci
-      - run: pnpm run test
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx biome ci
+      - run: bun run test
 
   integration-testing:
     strategy:

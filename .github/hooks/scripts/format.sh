@@ -19,7 +19,7 @@ process.stdin.on("end", () => {
 
 case "$tool_name" in
   create_file|replace_string_in_file|insert_edit_into_file|edit_notebook_file)
-    pnpm run fmt
+    bun run fmt
     ;;
   *)
     # Not a file-modifying tool; skip formatting.
