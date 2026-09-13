@@ -5,7 +5,9 @@ author: Zheng Junyi <zhengjunyi@live.com>
 inputs:
   version:
     description: |
-      Version of Zig to install (e.g. "0.16.0" or "master").
+      Version of Zig to install. Accepts an exact version (e.g. "0.16.0"),
+      a partial version (e.g. "0.16" resolves to the latest "0.16.x"),
+      "master", or "latest".
       Defaults to the `minimum_zig_version` field in build.zig.zon, or "latest".
     required: false
   cache:
