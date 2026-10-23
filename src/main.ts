@@ -21,9 +21,11 @@ import {
   find,
 } from "@actions/tool-cache";
 import {
+  getRunIdentity,
   getZigGlobalCacheDir,
   getZigLocalCacheDir,
   globalCacheKey,
+  globalCacheRestoreKeys,
   localCacheKey,
   localCacheRestoreKeys,
   parseCacheMode,
@@ -31,6 +33,7 @@ import {
   saveCache,
   tarballCacheKey,
 } from "./cache";
+import { parseCacheSizeLimit } from "./cache-size";
 import { hashBuildInputs } from "./hash";
 import { fetchIndex, getDownloadFile, resolveVersion } from "./index-json";
 import { verifyMinisign } from "./minisign";
@@ -42,6 +45,8 @@ export async function run(): Promise<void> {
   try {
     const requestedVersion = getInput("version");
     const cacheMode = parseCacheMode(getInput("cache"));
+    const extraCacheKey = getInput("cache-key");
+    const cacheSizeLimitMib = parseCacheSizeLimit(getInput("cache-size-limit"));
     const workdir = process.cwd();
     const { triple, ext } = getZigTarget();
 
@@ -116,14 +121,22 @@ export async function run(): Promise<void> {
     if (cacheMode === "all") {
       const projectRoot = (await findProjectRoot(workdir)) ?? workdir;
       const buildHash = await hashBuildInputs(projectRoot);
+      const { runId, runAttempt } = getRunIdentity();
       await restoreCache(
         [getZigGlobalCacheDir()],
-        globalCacheKey(triple, resolved.version),
+        globalCacheKey(
+          triple,
+          resolved.version,
+          extraCacheKey,
+          runId,
+          runAttempt,
+        ),
+        globalCacheRestoreKeys(triple, resolved.version, extraCacheKey),
       );
       await restoreCache(
         [getZigLocalCacheDir(projectRoot)],
-        localCacheKey(triple, resolved.version, buildHash),
-        localCacheRestoreKeys(triple, resolved.version),
+        localCacheKey(triple, resolved.version, buildHash, extraCacheKey),
+        localCacheRestoreKeys(triple, resolved.version, extraCacheKey),
       );
 
       saveState("setup-zig-cache-mode", cacheMode);
@@ -131,6 +144,8 @@ export async function run(): Promise<void> {
       saveState("setup-zig-version", resolved.version);
       saveState("setup-zig-build-hash", buildHash);
       saveState("setup-zig-project-root", projectRoot);
+      saveState("setup-zig-cache-key", extraCacheKey);
+      saveState("setup-zig-cache-size-limit", String(cacheSizeLimitMib));
     }
 
     addPath(installDir);

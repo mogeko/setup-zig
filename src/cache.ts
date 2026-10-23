@@ -17,14 +17,50 @@ export function parseCacheMode(input: string): CacheMode {
   return normalized as CacheMode;
 }
 
+/**
+ * Sanitizes the user-provided `cache-key` input so it is safe to embed in a
+ * cache key. An empty component becomes `default`, which keeps caches created
+ * with and without the input in separate namespaces.
+ */
+function extraKeySegment(extra?: string): string {
+  const sanitized = (extra ?? "")
+    .trim()
+    .replace(/[^A-Za-z0-9._-]+/g, "_")
+    .slice(0, 100);
+  return sanitized.length > 0 ? sanitized : "default";
+}
+
 /** Cache key for the downloaded Zig archive (platform + version). */
 export function tarballCacheKey(triple: string, version: string): string {
   return `setup-zig-tarball-${triple}-${version}`;
 }
 
-/** Cache key for the Zig global compile cache. */
-export function globalCacheKey(triple: string, version: string): string {
-  return `setup-zig-global-cache-${triple}-${version}`;
+/**
+ * Restore-key prefix for the Zig global compile cache.
+ *
+ * The global cache keeps growing as builds run, but GitHub Actions caches are
+ * immutable: a key can only be written once. The cache is therefore saved
+ * under a per-run key and restored through this prefix.
+ */
+export function globalCacheRestoreKeys(
+  triple: string,
+  version: string,
+  extra?: string,
+): string[] {
+  return [
+    `setup-zig-global-cache-${triple}-${version}-${extraKeySegment(extra)}-`,
+  ];
+}
+
+/** Cache key for the Zig global compile cache (unique per run attempt). */
+export function globalCacheKey(
+  triple: string,
+  version: string,
+  extra: string | undefined,
+  runId: string,
+  runAttempt: string,
+): string {
+  return `${globalCacheRestoreKeys(triple, version, extra)[0]}${runId}-${runAttempt}`;
 }
 
 /** Cache key for the project-local Zig cache (`.zig-cache`). */
@@ -32,16 +68,29 @@ export function localCacheKey(
   triple: string,
   version: string,
   buildHash: string,
+  extra?: string,
 ): string {
-  return `setup-zig-local-cache-${triple}-${version}-${buildHash}`;
+  const prefix = localCacheRestoreKeys(triple, version, extra)[0];
+  return `${prefix}${buildHash}`;
 }
 
 /** Restore-key prefix for the local cache, falling back to any build. */
 export function localCacheRestoreKeys(
   triple: string,
   version: string,
+  extra?: string,
 ): string[] {
-  return [`setup-zig-local-cache-${triple}-${version}-`];
+  return [
+    `setup-zig-local-cache-${triple}-${version}-${extraKeySegment(extra)}-`,
+  ];
+}
+
+/** Identifies the current workflow run, used to make saved keys unique. */
+export function getRunIdentity(): { runId: string; runAttempt: string } {
+  return {
+    runId: process.env.GITHUB_RUN_ID || "0",
+    runAttempt: process.env.GITHUB_RUN_ATTEMPT || "1",
+  };
 }
 
 /** Zig global cache directory for the current platform. */

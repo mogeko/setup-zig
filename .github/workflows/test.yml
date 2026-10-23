@@ -55,5 +55,6 @@ jobs:
         uses: ./action
         with:
           cache: all
+          cache-key: ${{ matrix.os }}
       - run: zig build
       - run: zig build run

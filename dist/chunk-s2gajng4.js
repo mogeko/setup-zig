@@ -17250,962 +17250,6 @@ var require_eventsource = __commonJS(function(exports, module) {
   };
 });
 
-// node_modules/concat-map/index.js
-var require_concat_map = __commonJS(function(exports, module) {
-  module.exports = function(xs, fn) {
-    var res = [];
-    for (var i = 0;i < xs.length; i++) {
-      var x = fn(xs[i], i);
-      if (isArray(x))
-        res.push.apply(res, x);
-      else
-        res.push(x);
-    }
-    return res;
-  };
-  var isArray = Array.isArray || function(xs) {
-    return Object.prototype.toString.call(xs) === "[object Array]";
-  };
-});
-
-// node_modules/balanced-match/index.js
-var require_balanced_match = __commonJS(function(exports, module) {
-  module.exports = balanced;
-  function balanced(a, b, str) {
-    if (a instanceof RegExp)
-      a = maybeMatch(a, str);
-    if (b instanceof RegExp)
-      b = maybeMatch(b, str);
-    var r = range(a, b, str);
-    return r && {
-      start: r[0],
-      end: r[1],
-      pre: str.slice(0, r[0]),
-      body: str.slice(r[0] + a.length, r[1]),
-      post: str.slice(r[1] + b.length)
-    };
-  }
-  function maybeMatch(reg, str) {
-    var m = str.match(reg);
-    return m ? m[0] : null;
-  }
-  balanced.range = range;
-  function range(a, b, str) {
-    var begs, beg, left, right, result;
-    var ai = str.indexOf(a);
-    var bi = str.indexOf(b, ai + 1);
-    var i = ai;
-    if (ai >= 0 && bi > 0) {
-      if (a === b) {
-        return [ai, bi];
-      }
-      begs = [];
-      left = str.length;
-      while (i >= 0 && !result) {
-        if (i == ai) {
-          begs.push(i);
-          ai = str.indexOf(a, i + 1);
-        } else if (begs.length == 1) {
-          result = [begs.pop(), bi];
-        } else {
-          beg = begs.pop();
-          if (beg < left) {
-            left = beg;
-            right = bi;
-          }
-          bi = str.indexOf(b, i + 1);
-        }
-        i = ai < bi && ai >= 0 ? ai : bi;
-      }
-      if (begs.length) {
-        result = [left, right];
-      }
-    }
-    return result;
-  }
-});
-
-// node_modules/brace-expansion/index.js
-var require_brace_expansion = __commonJS(function(exports, module) {
-  var concatMap = require_concat_map();
-  var balanced = require_balanced_match();
-  module.exports = expandTop;
-  var escSlash = "\x00SLASH" + Math.random() + "\x00";
-  var escOpen = "\x00OPEN" + Math.random() + "\x00";
-  var escClose = "\x00CLOSE" + Math.random() + "\x00";
-  var escComma = "\x00COMMA" + Math.random() + "\x00";
-  var escPeriod = "\x00PERIOD" + Math.random() + "\x00";
-  var EXPANSION_MAX = 1e5;
-  var EXPANSION_MAX_LENGTH = 4000000;
-  function numeric(str) {
-    return parseInt(str, 10) == str ? parseInt(str, 10) : str.charCodeAt(0);
-  }
-  function escapeBraces(str) {
-    return str.split("\\\\").join(escSlash).split("\\{").join(escOpen).split("\\}").join(escClose).split("\\,").join(escComma).split("\\.").join(escPeriod);
-  }
-  function unescapeBraces(str) {
-    return str.split(escSlash).join("\\").split(escOpen).join("{").split(escClose).join("}").split(escComma).join(",").split(escPeriod).join(".");
-  }
-  function parseCommaParts(str) {
-    if (!str)
-      return [""];
-    var parts = [];
-    var m = balanced("{", "}", str);
-    if (!m)
-      return str.split(",");
-    var pre = m.pre;
-    var body = m.body;
-    var post = m.post;
-    var p = pre.split(",");
-    p[p.length - 1] += "{" + body + "}";
-    var postParts = parseCommaParts(post);
-    if (post.length) {
-      p[p.length - 1] += postParts.shift();
-      p.push.apply(p, postParts);
-    }
-    parts.push.apply(parts, p);
-    return parts;
-  }
-  function expandTop(str, options) {
-    if (!str)
-      return [];
-    options = options || {};
-    var max = options.max == null ? EXPANSION_MAX : options.max;
-    var maxLength = options.maxLength == null ? EXPANSION_MAX_LENGTH : options.maxLength;
-    if (str.substr(0, 2) === "{}") {
-      str = "\\{\\}" + str.substr(2);
-    }
-    return expand(escapeBraces(str), max, maxLength, true).map(unescapeBraces);
-  }
-  function embrace(str) {
-    return "{" + str + "}";
-  }
-  function isPadded(el) {
-    return /^-?0\d/.test(el);
-  }
-  function lte(i, y) {
-    return i <= y;
-  }
-  function gte(i, y) {
-    return i >= y;
-  }
-  function combine(acc, base, pre, values, max, maxLength, dropEmpties, outBase) {
-    var out = [];
-    var length = 0;
-    for (var a = 0;a < acc.length; a++) {
-      for (var v = 0;v < values.length; v++) {
-        if (out.length >= max)
-          return out;
-        var expansion = acc[a] + pre + values[v];
-        if (dropEmpties && expansion.length === base[a])
-          continue;
-        if (length + expansion.length > maxLength)
-          return out;
-        out.push(expansion);
-        outBase.push(base[a]);
-        length += expansion.length;
-      }
-    }
-    return out;
-  }
-  function expandSequence(body, isAlphaSequence, max, maxLength) {
-    var n = body.split(/\.\./);
-    var N = [];
-    if (n[0] === undefined || n[1] === undefined) {
-      return N;
-    }
-    var x = numeric(n[0]);
-    var y = numeric(n[1]);
-    var width = Math.max(n[0].length, n[1].length);
-    var incr = n.length === 3 && n[2] !== undefined ? Math.max(Math.abs(numeric(n[2])), 1) : 1;
-    var test = lte;
-    var reverse = y < x;
-    if (reverse) {
-      incr *= -1;
-      test = gte;
-    }
-    var pad = n.some(isPadded);
-    var length = 0;
-    for (var i = x;test(i, y) && N.length < max; i += incr) {
-      var c;
-      if (isAlphaSequence) {
-        c = String.fromCharCode(i);
-        if (c === "\\") {
-          c = "";
-        }
-      } else {
-        c = String(i);
-        if (pad) {
-          var need = width - c.length;
-          if (need > 0) {
-            var z = new Array(need + 1).join("0");
-            if (i < 0) {
-              c = "-" + z + c.slice(1);
-            } else {
-              c = z + c;
-            }
-          }
-        }
-      }
-      if (length + c.length > maxLength)
-        break;
-      N.push(c);
-      length += c.length;
-    }
-    return N;
-  }
-  function expand(str, max, maxLength, isTop) {
-    var acc = [""];
-    var accBase = [0];
-    var dropEmpties = false;
-    var firstGroup = true;
-    var nextBase;
-    for (;; ) {
-      var m = balanced("{", "}", str);
-      if (!m) {
-        return combine(acc, accBase, str, [""], max, maxLength, dropEmpties, []);
-      }
-      var pre = m.pre;
-      if (/\$$/.test(pre)) {
-        return combine(acc, accBase, str, [""], max, maxLength, dropEmpties, []);
-      }
-      var isNumericSequence = /^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(m.body);
-      var isAlphaSequence = /^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(m.body);
-      var isSequence = isNumericSequence || isAlphaSequence;
-      var isOptions = m.body.indexOf(",") >= 0;
-      if (!isSequence && !isOptions) {
-        if (m.post.match(/,(?!,).*\}/)) {
-          str = m.pre + "{" + m.body + escClose + m.post;
-          isTop = true;
-          firstGroup = true;
-          dropEmpties = false;
-          accBase = [];
-          for (var b = 0;b < acc.length; b++) {
-            accBase.push(acc[b].length);
-          }
-          continue;
-        }
-        return combine(acc, accBase, pre + "{" + m.body + "}" + m.post, [""], max, maxLength, dropEmpties, []);
-      }
-      if (firstGroup) {
-        dropEmpties = isTop && !isSequence;
-        firstGroup = false;
-      }
-      var values;
-      if (isSequence) {
-        values = expandSequence(m.body, isAlphaSequence, max, maxLength);
-      } else {
-        var n = parseCommaParts(m.body);
-        if (n.length === 1 && n[0] !== undefined) {
-          n = expand(n[0], max, maxLength, false).map(embrace);
-          if (n.length === 1) {
-            nextBase = [];
-            acc = combine(acc, accBase, pre + n[0], [""], max, maxLength, dropEmpties && !m.post.length, nextBase);
-            accBase = nextBase;
-            if (!m.post.length)
-              break;
-            str = m.post;
-            continue;
-          }
-        }
-        var dropsEmpties = dropEmpties && !m.post.length && !pre;
-        for (var d = 0;dropsEmpties && d < acc.length; d++) {
-          if (acc[d].length !== accBase[d]) {
-            dropsEmpties = false;
-          }
-        }
-        values = [];
-        var valuesLength = 0;
-        outer:
-          for (var j = 0;j < n.length; j++) {
-            var expanded = expand(n[j], max, maxLength, false);
-            for (var k = 0;k < expanded.length; k++) {
-              var v = expanded[k];
-              if (dropsEmpties && !v)
-                continue;
-              if (values.length >= max || valuesLength + v.length > maxLength) {
-                break outer;
-              }
-              values.push(v);
-              valuesLength += v.length;
-            }
-          }
-      }
-      nextBase = [];
-      acc = combine(acc, accBase, pre, values, max, maxLength, dropEmpties && !m.post.length, nextBase);
-      accBase = nextBase;
-      if (!m.post.length)
-        break;
-      str = m.post;
-    }
-    return acc;
-  }
-});
-
-// node_modules/minimatch/minimatch.js
-var require_minimatch = __commonJS(function(exports, module) {
-  module.exports = minimatch;
-  minimatch.Minimatch = Minimatch;
-  var path = function() {
-    try {
-      return __require("path");
-    } catch (e) {}
-  }() || {
-    sep: "/"
-  };
-  minimatch.sep = path.sep;
-  var GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {};
-  var expand = require_brace_expansion();
-  var plTypes = {
-    "!": { open: "(?:(?!(?:", close: "))[^/]*?)" },
-    "?": { open: "(?:", close: ")?" },
-    "+": { open: "(?:", close: ")+" },
-    "*": { open: "(?:", close: ")*" },
-    "@": { open: "(?:", close: ")" }
-  };
-  var qmark = "[^/]";
-  var star = qmark + "*?";
-  var twoStarDot = "(?:(?!(?:\\/|^)(?:\\.{1,2})($|\\/)).)*?";
-  var twoStarNoDot = "(?:(?!(?:\\/|^)\\.).)*?";
-  var reSpecials = charSet("().*{}+?[]^$\\!");
-  function charSet(s) {
-    return s.split("").reduce(function(set, c) {
-      set[c] = true;
-      return set;
-    }, {});
-  }
-  var slashSplit = /\/+/;
-  minimatch.filter = filter;
-  function filter(pattern, options) {
-    options = options || {};
-    return function(p, i, list) {
-      return minimatch(p, pattern, options);
-    };
-  }
-  function ext(a, b) {
-    b = b || {};
-    var t = {};
-    Object.keys(a).forEach(function(k) {
-      t[k] = a[k];
-    });
-    Object.keys(b).forEach(function(k) {
-      t[k] = b[k];
-    });
-    return t;
-  }
-  minimatch.defaults = function(def) {
-    if (!def || typeof def !== "object" || !Object.keys(def).length) {
-      return minimatch;
-    }
-    var orig = minimatch;
-    var m = function minimatch(p, pattern, options) {
-      return orig(p, pattern, ext(def, options));
-    };
-    m.Minimatch = function Minimatch(pattern, options) {
-      return new orig.Minimatch(pattern, ext(def, options));
-    };
-    m.Minimatch.defaults = function defaults(options) {
-      return orig.defaults(ext(def, options)).Minimatch;
-    };
-    m.filter = function filter(pattern, options) {
-      return orig.filter(pattern, ext(def, options));
-    };
-    m.defaults = function defaults(options) {
-      return orig.defaults(ext(def, options));
-    };
-    m.makeRe = function makeRe(pattern, options) {
-      return orig.makeRe(pattern, ext(def, options));
-    };
-    m.braceExpand = function braceExpand(pattern, options) {
-      return orig.braceExpand(pattern, ext(def, options));
-    };
-    m.match = function(list, pattern, options) {
-      return orig.match(list, pattern, ext(def, options));
-    };
-    return m;
-  };
-  Minimatch.defaults = function(def) {
-    return minimatch.defaults(def).Minimatch;
-  };
-  function minimatch(p, pattern, options) {
-    assertValidPattern(pattern);
-    if (!options)
-      options = {};
-    if (!options.nocomment && pattern.charAt(0) === "#") {
-      return false;
-    }
-    return new Minimatch(pattern, options).match(p);
-  }
-  function Minimatch(pattern, options) {
-    if (!(this instanceof Minimatch)) {
-      return new Minimatch(pattern, options);
-    }
-    assertValidPattern(pattern);
-    if (!options)
-      options = {};
-    pattern = pattern.trim();
-    if (!options.allowWindowsEscape && path.sep !== "/") {
-      pattern = pattern.split(path.sep).join("/");
-    }
-    this.options = options;
-    this.maxGlobstarRecursion = options.maxGlobstarRecursion !== undefined ? options.maxGlobstarRecursion : 200;
-    this.set = [];
-    this.pattern = pattern;
-    this.regexp = null;
-    this.negate = false;
-    this.comment = false;
-    this.empty = false;
-    this.partial = !!options.partial;
-    this.make();
-  }
-  Minimatch.prototype.debug = function() {};
-  Minimatch.prototype.make = make;
-  function make() {
-    var pattern = this.pattern;
-    var options = this.options;
-    if (!options.nocomment && pattern.charAt(0) === "#") {
-      this.comment = true;
-      return;
-    }
-    if (!pattern) {
-      this.empty = true;
-      return;
-    }
-    this.parseNegate();
-    var set = this.globSet = this.braceExpand();
-    if (options.debug)
-      this.debug = function debug() {
-        console.error.apply(console, arguments);
-      };
-    this.debug(this.pattern, set);
-    set = this.globParts = set.map(function(s) {
-      return s.split(slashSplit);
-    });
-    this.debug(this.pattern, set);
-    set = set.map(function(s, si, set) {
-      return s.map(this.parse, this);
-    }, this);
-    this.debug(this.pattern, set);
-    set = set.filter(function(s) {
-      return s.indexOf(false) === -1;
-    });
-    this.debug(this.pattern, set);
-    this.set = set;
-  }
-  Minimatch.prototype.parseNegate = parseNegate;
-  function parseNegate() {
-    var pattern = this.pattern;
-    var negate = false;
-    var options = this.options;
-    var negateOffset = 0;
-    if (options.nonegate)
-      return;
-    for (var i = 0, l = pattern.length;i < l && pattern.charAt(i) === "!"; i++) {
-      negate = !negate;
-      negateOffset++;
-    }
-    if (negateOffset)
-      this.pattern = pattern.substr(negateOffset);
-    this.negate = negate;
-  }
-  minimatch.braceExpand = function(pattern, options) {
-    return braceExpand(pattern, options);
-  };
-  Minimatch.prototype.braceExpand = braceExpand;
-  function braceExpand(pattern, options) {
-    if (!options) {
-      if (this instanceof Minimatch) {
-        options = this.options;
-      } else {
-        options = {};
-      }
-    }
-    pattern = typeof pattern === "undefined" ? this.pattern : pattern;
-    assertValidPattern(pattern);
-    if (options.nobrace || !/\{(?:(?!\{).)*\}/.test(pattern)) {
-      return [pattern];
-    }
-    return expand(pattern);
-  }
-  var MAX_PATTERN_LENGTH = 1024 * 64;
-  var assertValidPattern = function(pattern) {
-    if (typeof pattern !== "string") {
-      throw new TypeError("invalid pattern");
-    }
-    if (pattern.length > MAX_PATTERN_LENGTH) {
-      throw new TypeError("pattern is too long");
-    }
-  };
-  Minimatch.prototype.parse = parse;
-  var SUBPARSE = {};
-  function parse(pattern, isSub) {
-    assertValidPattern(pattern);
-    var options = this.options;
-    if (pattern === "**") {
-      if (!options.noglobstar)
-        return GLOBSTAR;
-      else
-        pattern = "*";
-    }
-    if (pattern === "")
-      return "";
-    var re = "";
-    var hasMagic = !!options.nocase;
-    var escaping = false;
-    var patternListStack = [];
-    var negativeLists = [];
-    var stateChar;
-    var inClass = false;
-    var reClassStart = -1;
-    var classStart = -1;
-    var patternStart = pattern.charAt(0) === "." ? "" : options.dot ? "(?!(?:^|\\/)\\.{1,2}(?:$|\\/))" : "(?!\\.)";
-    var self = this;
-    function clearStateChar() {
-      if (stateChar) {
-        switch (stateChar) {
-          case "*":
-            re += star;
-            hasMagic = true;
-            break;
-          case "?":
-            re += qmark;
-            hasMagic = true;
-            break;
-          default:
-            re += "\\" + stateChar;
-            break;
-        }
-        self.debug("clearStateChar %j %j", stateChar, re);
-        stateChar = false;
-      }
-    }
-    for (var i = 0, len = pattern.length, c;i < len && (c = pattern.charAt(i)); i++) {
-      this.debug("%s\t%s %s %j", pattern, i, re, c);
-      if (escaping && reSpecials[c]) {
-        re += "\\" + c;
-        escaping = false;
-        continue;
-      }
-      switch (c) {
-        case "/": {
-          return false;
-        }
-        case "\\":
-          clearStateChar();
-          escaping = true;
-          continue;
-        case "?":
-        case "*":
-        case "+":
-        case "@":
-        case "!":
-          this.debug("%s\t%s %s %j <-- stateChar", pattern, i, re, c);
-          if (inClass) {
-            this.debug("  in class");
-            if (c === "!" && i === classStart + 1)
-              c = "^";
-            re += c;
-            continue;
-          }
-          if (c === "*" && stateChar === "*")
-            continue;
-          self.debug("call clearStateChar %j", stateChar);
-          clearStateChar();
-          stateChar = c;
-          if (options.noext)
-            clearStateChar();
-          continue;
-        case "(":
-          if (inClass) {
-            re += "(";
-            continue;
-          }
-          if (!stateChar) {
-            re += "\\(";
-            continue;
-          }
-          patternListStack.push({
-            type: stateChar,
-            start: i - 1,
-            reStart: re.length,
-            open: plTypes[stateChar].open,
-            close: plTypes[stateChar].close
-          });
-          re += stateChar === "!" ? "(?:(?!(?:" : "(?:";
-          this.debug("plType %j %j", stateChar, re);
-          stateChar = false;
-          continue;
-        case ")":
-          if (inClass || !patternListStack.length) {
-            re += "\\)";
-            continue;
-          }
-          clearStateChar();
-          hasMagic = true;
-          var pl = patternListStack.pop();
-          re += pl.close;
-          if (pl.type === "!") {
-            negativeLists.push(pl);
-          }
-          pl.reEnd = re.length;
-          continue;
-        case "|":
-          if (inClass || !patternListStack.length || escaping) {
-            re += "\\|";
-            escaping = false;
-            continue;
-          }
-          clearStateChar();
-          re += "|";
-          continue;
-        case "[":
-          clearStateChar();
-          if (inClass) {
-            re += "\\" + c;
-            continue;
-          }
-          inClass = true;
-          classStart = i;
-          reClassStart = re.length;
-          re += c;
-          continue;
-        case "]":
-          if (i === classStart + 1 || !inClass) {
-            re += "\\" + c;
-            escaping = false;
-            continue;
-          }
-          var cs = pattern.substring(classStart + 1, i);
-          try {
-            RegExp("[" + cs + "]");
-          } catch (er) {
-            var sp = this.parse(cs, SUBPARSE);
-            re = re.substr(0, reClassStart) + "\\[" + sp[0] + "\\]";
-            hasMagic = hasMagic || sp[1];
-            inClass = false;
-            continue;
-          }
-          hasMagic = true;
-          inClass = false;
-          re += c;
-          continue;
-        default:
-          clearStateChar();
-          if (escaping) {
-            escaping = false;
-          } else if (reSpecials[c] && !(c === "^" && inClass)) {
-            re += "\\";
-          }
-          re += c;
-      }
-    }
-    if (inClass) {
-      cs = pattern.substr(classStart + 1);
-      sp = this.parse(cs, SUBPARSE);
-      re = re.substr(0, reClassStart) + "\\[" + sp[0];
-      hasMagic = hasMagic || sp[1];
-    }
-    for (pl = patternListStack.pop();pl; pl = patternListStack.pop()) {
-      var tail = re.slice(pl.reStart + pl.open.length);
-      this.debug("setting tail", re, pl);
-      tail = tail.replace(/((?:\\{2}){0,64})(\\?)\|/g, function(_, $1, $2) {
-        if (!$2) {
-          $2 = "\\";
-        }
-        return $1 + $1 + $2 + "|";
-      });
-      this.debug(`tail=%j
-   %s`, tail, tail, pl, re);
-      var t = pl.type === "*" ? star : pl.type === "?" ? qmark : "\\" + pl.type;
-      hasMagic = true;
-      re = re.slice(0, pl.reStart) + t + "\\(" + tail;
-    }
-    clearStateChar();
-    if (escaping) {
-      re += "\\\\";
-    }
-    var addPatternStart = false;
-    switch (re.charAt(0)) {
-      case "[":
-      case ".":
-      case "(":
-        addPatternStart = true;
-    }
-    for (var n = negativeLists.length - 1;n > -1; n--) {
-      var nl = negativeLists[n];
-      var nlBefore = re.slice(0, nl.reStart);
-      var nlFirst = re.slice(nl.reStart, nl.reEnd - 8);
-      var nlLast = re.slice(nl.reEnd - 8, nl.reEnd);
-      var nlAfter = re.slice(nl.reEnd);
-      nlLast += nlAfter;
-      var openParensBefore = nlBefore.split("(").length - 1;
-      var cleanAfter = nlAfter;
-      for (i = 0;i < openParensBefore; i++) {
-        cleanAfter = cleanAfter.replace(/\)[+*?]?/, "");
-      }
-      nlAfter = cleanAfter;
-      var dollar = "";
-      if (nlAfter === "" && isSub !== SUBPARSE) {
-        dollar = "$";
-      }
-      var newRe = nlBefore + nlFirst + nlAfter + dollar + nlLast;
-      re = newRe;
-    }
-    if (re !== "" && hasMagic) {
-      re = "(?=.)" + re;
-    }
-    if (addPatternStart) {
-      re = patternStart + re;
-    }
-    if (isSub === SUBPARSE) {
-      return [re, hasMagic];
-    }
-    if (!hasMagic) {
-      return globUnescape(pattern);
-    }
-    var flags = options.nocase ? "i" : "";
-    try {
-      var regExp = new RegExp("^" + re + "$", flags);
-    } catch (er) {
-      return new RegExp("$.");
-    }
-    regExp._glob = pattern;
-    regExp._src = re;
-    return regExp;
-  }
-  minimatch.makeRe = function(pattern, options) {
-    return new Minimatch(pattern, options || {}).makeRe();
-  };
-  Minimatch.prototype.makeRe = makeRe;
-  function makeRe() {
-    if (this.regexp || this.regexp === false)
-      return this.regexp;
-    var set = this.set;
-    if (!set.length) {
-      this.regexp = false;
-      return this.regexp;
-    }
-    var options = this.options;
-    var twoStar = options.noglobstar ? star : options.dot ? twoStarDot : twoStarNoDot;
-    var flags = options.nocase ? "i" : "";
-    var re = set.map(function(pattern) {
-      return pattern.map(function(p) {
-        return p === GLOBSTAR ? twoStar : typeof p === "string" ? regExpEscape(p) : p._src;
-      }).join("\\/");
-    }).join("|");
-    re = "^(?:" + re + ")$";
-    if (this.negate)
-      re = "^(?!" + re + ").*$";
-    try {
-      this.regexp = new RegExp(re, flags);
-    } catch (ex) {
-      this.regexp = false;
-    }
-    return this.regexp;
-  }
-  minimatch.match = function(list, pattern, options) {
-    options = options || {};
-    var mm = new Minimatch(pattern, options);
-    list = list.filter(function(f) {
-      return mm.match(f);
-    });
-    if (mm.options.nonull && !list.length) {
-      list.push(pattern);
-    }
-    return list;
-  };
-  Minimatch.prototype.match = function match(f, partial) {
-    if (typeof partial === "undefined")
-      partial = this.partial;
-    this.debug("match", f, this.pattern);
-    if (this.comment)
-      return false;
-    if (this.empty)
-      return f === "";
-    if (f === "/" && partial)
-      return true;
-    var options = this.options;
-    if (path.sep !== "/") {
-      f = f.split(path.sep).join("/");
-    }
-    f = f.split(slashSplit);
-    this.debug(this.pattern, "split", f);
-    var set = this.set;
-    this.debug(this.pattern, "set", set);
-    var filename;
-    var i;
-    for (i = f.length - 1;i >= 0; i--) {
-      filename = f[i];
-      if (filename)
-        break;
-    }
-    for (i = 0;i < set.length; i++) {
-      var pattern = set[i];
-      var file = f;
-      if (options.matchBase && pattern.length === 1) {
-        file = [filename];
-      }
-      var hit = this.matchOne(file, pattern, partial);
-      if (hit) {
-        if (options.flipNegate)
-          return true;
-        return !this.negate;
-      }
-    }
-    if (options.flipNegate)
-      return false;
-    return this.negate;
-  };
-  Minimatch.prototype.matchOne = function(file, pattern, partial) {
-    if (pattern.indexOf(GLOBSTAR) !== -1) {
-      return this._matchGlobstar(file, pattern, partial, 0, 0);
-    }
-    return this._matchOne(file, pattern, partial, 0, 0);
-  };
-  Minimatch.prototype._matchGlobstar = function(file, pattern, partial, fileIndex, patternIndex) {
-    var i;
-    var firstgs = -1;
-    for (i = patternIndex;i < pattern.length; i++) {
-      if (pattern[i] === GLOBSTAR) {
-        firstgs = i;
-        break;
-      }
-    }
-    var lastgs = -1;
-    for (i = pattern.length - 1;i >= 0; i--) {
-      if (pattern[i] === GLOBSTAR) {
-        lastgs = i;
-        break;
-      }
-    }
-    var head = pattern.slice(patternIndex, firstgs);
-    var body = partial ? pattern.slice(firstgs + 1) : pattern.slice(firstgs + 1, lastgs);
-    var tail = partial ? [] : pattern.slice(lastgs + 1);
-    if (head.length) {
-      var fileHead = file.slice(fileIndex, fileIndex + head.length);
-      if (!this._matchOne(fileHead, head, partial, 0, 0)) {
-        return false;
-      }
-      fileIndex += head.length;
-    }
-    var fileTailMatch = 0;
-    if (tail.length) {
-      if (tail.length + fileIndex > file.length)
-        return false;
-      var tailStart = file.length - tail.length;
-      if (this._matchOne(file, tail, partial, tailStart, 0)) {
-        fileTailMatch = tail.length;
-      } else {
-        if (file[file.length - 1] !== "" || fileIndex + tail.length === file.length) {
-          return false;
-        }
-        tailStart--;
-        if (!this._matchOne(file, tail, partial, tailStart, 0)) {
-          return false;
-        }
-        fileTailMatch = tail.length + 1;
-      }
-    }
-    if (!body.length) {
-      var sawSome = !!fileTailMatch;
-      for (i = fileIndex;i < file.length - fileTailMatch; i++) {
-        var f = String(file[i]);
-        sawSome = true;
-        if (f === "." || f === ".." || !this.options.dot && f.charAt(0) === ".") {
-          return false;
-        }
-      }
-      return partial || sawSome;
-    }
-    var bodySegments = [[[], 0]];
-    var currentBody = bodySegments[0];
-    var nonGsParts = 0;
-    var nonGsPartsSums = [0];
-    for (var bi = 0;bi < body.length; bi++) {
-      var b = body[bi];
-      if (b === GLOBSTAR) {
-        nonGsPartsSums.push(nonGsParts);
-        currentBody = [[], 0];
-        bodySegments.push(currentBody);
-      } else {
-        currentBody[0].push(b);
-        nonGsParts++;
-      }
-    }
-    var idx = bodySegments.length - 1;
-    var fileLength = file.length - fileTailMatch;
-    for (var si = 0;si < bodySegments.length; si++) {
-      bodySegments[si][1] = fileLength - (nonGsPartsSums[idx--] + bodySegments[si][0].length);
-    }
-    return !!this._matchGlobStarBodySections(file, bodySegments, fileIndex, 0, partial, 0, !!fileTailMatch);
-  };
-  Minimatch.prototype._matchGlobStarBodySections = function(file, bodySegments, fileIndex, bodyIndex, partial, globStarDepth, sawTail) {
-    var bs = bodySegments[bodyIndex];
-    if (!bs) {
-      for (var i = fileIndex;i < file.length; i++) {
-        sawTail = true;
-        var f = file[i];
-        if (f === "." || f === ".." || !this.options.dot && f.charAt(0) === ".") {
-          return false;
-        }
-      }
-      return sawTail;
-    }
-    var body = bs[0];
-    var after = bs[1];
-    while (fileIndex <= after) {
-      var m = this._matchOne(file.slice(0, fileIndex + body.length), body, partial, fileIndex, 0);
-      if (m && globStarDepth < this.maxGlobstarRecursion) {
-        var sub = this._matchGlobStarBodySections(file, bodySegments, fileIndex + body.length, bodyIndex + 1, partial, globStarDepth + 1, sawTail);
-        if (sub !== false) {
-          return sub;
-        }
-      }
-      var f = file[fileIndex];
-      if (f === "." || f === ".." || !this.options.dot && f.charAt(0) === ".") {
-        return false;
-      }
-      fileIndex++;
-    }
-    return partial || null;
-  };
-  Minimatch.prototype._matchOne = function(file, pattern, partial, fileIndex, patternIndex) {
-    var fi, pi, fl, pl;
-    for (fi = fileIndex, pi = patternIndex, fl = file.length, pl = pattern.length;fi < fl && pi < pl; fi++, pi++) {
-      this.debug("matchOne loop");
-      var p = pattern[pi];
-      var f = file[fi];
-      this.debug(pattern, p, f);
-      if (p === false || p === GLOBSTAR)
-        return false;
-      var hit;
-      if (typeof p === "string") {
-        hit = f === p;
-        this.debug("string match", p, f, hit);
-      } else {
-        hit = f.match(p);
-        this.debug("pattern match", p, f, hit);
-      }
-      if (!hit)
-        return false;
-    }
-    if (fi === fl && pi === pl) {
-      return true;
-    } else if (fi === fl) {
-      return partial;
-    } else if (pi === pl) {
-      return fi === fl - 1 && file[fi] === "";
-    }
-    throw new Error("wtf?");
-  };
-  function globUnescape(s) {
-    return s.replace(/\\(.)/g, "$1");
-  }
-  function regExpEscape(s) {
-    return s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-  }
-});
-
 // node_modules/semver/internal/constants.js
 var require_constants6 = __commonJS(function(exports, module) {
   var SEMVER_SPEC_VERSION = "2.0.0";
@@ -20048,6 +19092,962 @@ var require_semver = __commonJS(function(exports, module) {
     compareIdentifiers: identifiers.compareIdentifiers,
     rcompareIdentifiers: identifiers.rcompareIdentifiers
   };
+});
+
+// node_modules/concat-map/index.js
+var require_concat_map = __commonJS(function(exports, module) {
+  module.exports = function(xs, fn) {
+    var res = [];
+    for (var i = 0;i < xs.length; i++) {
+      var x = fn(xs[i], i);
+      if (isArray(x))
+        res.push.apply(res, x);
+      else
+        res.push(x);
+    }
+    return res;
+  };
+  var isArray = Array.isArray || function(xs) {
+    return Object.prototype.toString.call(xs) === "[object Array]";
+  };
+});
+
+// node_modules/balanced-match/index.js
+var require_balanced_match = __commonJS(function(exports, module) {
+  module.exports = balanced;
+  function balanced(a, b, str) {
+    if (a instanceof RegExp)
+      a = maybeMatch(a, str);
+    if (b instanceof RegExp)
+      b = maybeMatch(b, str);
+    var r = range(a, b, str);
+    return r && {
+      start: r[0],
+      end: r[1],
+      pre: str.slice(0, r[0]),
+      body: str.slice(r[0] + a.length, r[1]),
+      post: str.slice(r[1] + b.length)
+    };
+  }
+  function maybeMatch(reg, str) {
+    var m = str.match(reg);
+    return m ? m[0] : null;
+  }
+  balanced.range = range;
+  function range(a, b, str) {
+    var begs, beg, left, right, result;
+    var ai = str.indexOf(a);
+    var bi = str.indexOf(b, ai + 1);
+    var i = ai;
+    if (ai >= 0 && bi > 0) {
+      if (a === b) {
+        return [ai, bi];
+      }
+      begs = [];
+      left = str.length;
+      while (i >= 0 && !result) {
+        if (i == ai) {
+          begs.push(i);
+          ai = str.indexOf(a, i + 1);
+        } else if (begs.length == 1) {
+          result = [begs.pop(), bi];
+        } else {
+          beg = begs.pop();
+          if (beg < left) {
+            left = beg;
+            right = bi;
+          }
+          bi = str.indexOf(b, i + 1);
+        }
+        i = ai < bi && ai >= 0 ? ai : bi;
+      }
+      if (begs.length) {
+        result = [left, right];
+      }
+    }
+    return result;
+  }
+});
+
+// node_modules/brace-expansion/index.js
+var require_brace_expansion = __commonJS(function(exports, module) {
+  var concatMap = require_concat_map();
+  var balanced = require_balanced_match();
+  module.exports = expandTop;
+  var escSlash = "\x00SLASH" + Math.random() + "\x00";
+  var escOpen = "\x00OPEN" + Math.random() + "\x00";
+  var escClose = "\x00CLOSE" + Math.random() + "\x00";
+  var escComma = "\x00COMMA" + Math.random() + "\x00";
+  var escPeriod = "\x00PERIOD" + Math.random() + "\x00";
+  var EXPANSION_MAX = 1e5;
+  var EXPANSION_MAX_LENGTH = 4000000;
+  function numeric(str) {
+    return parseInt(str, 10) == str ? parseInt(str, 10) : str.charCodeAt(0);
+  }
+  function escapeBraces(str) {
+    return str.split("\\\\").join(escSlash).split("\\{").join(escOpen).split("\\}").join(escClose).split("\\,").join(escComma).split("\\.").join(escPeriod);
+  }
+  function unescapeBraces(str) {
+    return str.split(escSlash).join("\\").split(escOpen).join("{").split(escClose).join("}").split(escComma).join(",").split(escPeriod).join(".");
+  }
+  function parseCommaParts(str) {
+    if (!str)
+      return [""];
+    var parts = [];
+    var m = balanced("{", "}", str);
+    if (!m)
+      return str.split(",");
+    var pre = m.pre;
+    var body = m.body;
+    var post = m.post;
+    var p = pre.split(",");
+    p[p.length - 1] += "{" + body + "}";
+    var postParts = parseCommaParts(post);
+    if (post.length) {
+      p[p.length - 1] += postParts.shift();
+      p.push.apply(p, postParts);
+    }
+    parts.push.apply(parts, p);
+    return parts;
+  }
+  function expandTop(str, options) {
+    if (!str)
+      return [];
+    options = options || {};
+    var max = options.max == null ? EXPANSION_MAX : options.max;
+    var maxLength = options.maxLength == null ? EXPANSION_MAX_LENGTH : options.maxLength;
+    if (str.substr(0, 2) === "{}") {
+      str = "\\{\\}" + str.substr(2);
+    }
+    return expand(escapeBraces(str), max, maxLength, true).map(unescapeBraces);
+  }
+  function embrace(str) {
+    return "{" + str + "}";
+  }
+  function isPadded(el) {
+    return /^-?0\d/.test(el);
+  }
+  function lte(i, y) {
+    return i <= y;
+  }
+  function gte(i, y) {
+    return i >= y;
+  }
+  function combine(acc, base, pre, values, max, maxLength, dropEmpties, outBase) {
+    var out = [];
+    var length = 0;
+    for (var a = 0;a < acc.length; a++) {
+      for (var v = 0;v < values.length; v++) {
+        if (out.length >= max)
+          return out;
+        var expansion = acc[a] + pre + values[v];
+        if (dropEmpties && expansion.length === base[a])
+          continue;
+        if (length + expansion.length > maxLength)
+          return out;
+        out.push(expansion);
+        outBase.push(base[a]);
+        length += expansion.length;
+      }
+    }
+    return out;
+  }
+  function expandSequence(body, isAlphaSequence, max, maxLength) {
+    var n = body.split(/\.\./);
+    var N = [];
+    if (n[0] === undefined || n[1] === undefined) {
+      return N;
+    }
+    var x = numeric(n[0]);
+    var y = numeric(n[1]);
+    var width = Math.max(n[0].length, n[1].length);
+    var incr = n.length === 3 && n[2] !== undefined ? Math.max(Math.abs(numeric(n[2])), 1) : 1;
+    var test = lte;
+    var reverse = y < x;
+    if (reverse) {
+      incr *= -1;
+      test = gte;
+    }
+    var pad = n.some(isPadded);
+    var length = 0;
+    for (var i = x;test(i, y) && N.length < max; i += incr) {
+      var c;
+      if (isAlphaSequence) {
+        c = String.fromCharCode(i);
+        if (c === "\\") {
+          c = "";
+        }
+      } else {
+        c = String(i);
+        if (pad) {
+          var need = width - c.length;
+          if (need > 0) {
+            var z = new Array(need + 1).join("0");
+            if (i < 0) {
+              c = "-" + z + c.slice(1);
+            } else {
+              c = z + c;
+            }
+          }
+        }
+      }
+      if (length + c.length > maxLength)
+        break;
+      N.push(c);
+      length += c.length;
+    }
+    return N;
+  }
+  function expand(str, max, maxLength, isTop) {
+    var acc = [""];
+    var accBase = [0];
+    var dropEmpties = false;
+    var firstGroup = true;
+    var nextBase;
+    for (;; ) {
+      var m = balanced("{", "}", str);
+      if (!m) {
+        return combine(acc, accBase, str, [""], max, maxLength, dropEmpties, []);
+      }
+      var pre = m.pre;
+      if (/\$$/.test(pre)) {
+        return combine(acc, accBase, str, [""], max, maxLength, dropEmpties, []);
+      }
+      var isNumericSequence = /^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(m.body);
+      var isAlphaSequence = /^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(m.body);
+      var isSequence = isNumericSequence || isAlphaSequence;
+      var isOptions = m.body.indexOf(",") >= 0;
+      if (!isSequence && !isOptions) {
+        if (m.post.match(/,(?!,).*\}/)) {
+          str = m.pre + "{" + m.body + escClose + m.post;
+          isTop = true;
+          firstGroup = true;
+          dropEmpties = false;
+          accBase = [];
+          for (var b = 0;b < acc.length; b++) {
+            accBase.push(acc[b].length);
+          }
+          continue;
+        }
+        return combine(acc, accBase, pre + "{" + m.body + "}" + m.post, [""], max, maxLength, dropEmpties, []);
+      }
+      if (firstGroup) {
+        dropEmpties = isTop && !isSequence;
+        firstGroup = false;
+      }
+      var values;
+      if (isSequence) {
+        values = expandSequence(m.body, isAlphaSequence, max, maxLength);
+      } else {
+        var n = parseCommaParts(m.body);
+        if (n.length === 1 && n[0] !== undefined) {
+          n = expand(n[0], max, maxLength, false).map(embrace);
+          if (n.length === 1) {
+            nextBase = [];
+            acc = combine(acc, accBase, pre + n[0], [""], max, maxLength, dropEmpties && !m.post.length, nextBase);
+            accBase = nextBase;
+            if (!m.post.length)
+              break;
+            str = m.post;
+            continue;
+          }
+        }
+        var dropsEmpties = dropEmpties && !m.post.length && !pre;
+        for (var d = 0;dropsEmpties && d < acc.length; d++) {
+          if (acc[d].length !== accBase[d]) {
+            dropsEmpties = false;
+          }
+        }
+        values = [];
+        var valuesLength = 0;
+        outer:
+          for (var j = 0;j < n.length; j++) {
+            var expanded = expand(n[j], max, maxLength, false);
+            for (var k = 0;k < expanded.length; k++) {
+              var v = expanded[k];
+              if (dropsEmpties && !v)
+                continue;
+              if (values.length >= max || valuesLength + v.length > maxLength) {
+                break outer;
+              }
+              values.push(v);
+              valuesLength += v.length;
+            }
+          }
+      }
+      nextBase = [];
+      acc = combine(acc, accBase, pre, values, max, maxLength, dropEmpties && !m.post.length, nextBase);
+      accBase = nextBase;
+      if (!m.post.length)
+        break;
+      str = m.post;
+    }
+    return acc;
+  }
+});
+
+// node_modules/minimatch/minimatch.js
+var require_minimatch = __commonJS(function(exports, module) {
+  module.exports = minimatch;
+  minimatch.Minimatch = Minimatch;
+  var path = function() {
+    try {
+      return __require("path");
+    } catch (e) {}
+  }() || {
+    sep: "/"
+  };
+  minimatch.sep = path.sep;
+  var GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {};
+  var expand = require_brace_expansion();
+  var plTypes = {
+    "!": { open: "(?:(?!(?:", close: "))[^/]*?)" },
+    "?": { open: "(?:", close: ")?" },
+    "+": { open: "(?:", close: ")+" },
+    "*": { open: "(?:", close: ")*" },
+    "@": { open: "(?:", close: ")" }
+  };
+  var qmark = "[^/]";
+  var star = qmark + "*?";
+  var twoStarDot = "(?:(?!(?:\\/|^)(?:\\.{1,2})($|\\/)).)*?";
+  var twoStarNoDot = "(?:(?!(?:\\/|^)\\.).)*?";
+  var reSpecials = charSet("().*{}+?[]^$\\!");
+  function charSet(s) {
+    return s.split("").reduce(function(set, c) {
+      set[c] = true;
+      return set;
+    }, {});
+  }
+  var slashSplit = /\/+/;
+  minimatch.filter = filter;
+  function filter(pattern, options) {
+    options = options || {};
+    return function(p, i, list) {
+      return minimatch(p, pattern, options);
+    };
+  }
+  function ext(a, b) {
+    b = b || {};
+    var t = {};
+    Object.keys(a).forEach(function(k) {
+      t[k] = a[k];
+    });
+    Object.keys(b).forEach(function(k) {
+      t[k] = b[k];
+    });
+    return t;
+  }
+  minimatch.defaults = function(def) {
+    if (!def || typeof def !== "object" || !Object.keys(def).length) {
+      return minimatch;
+    }
+    var orig = minimatch;
+    var m = function minimatch(p, pattern, options) {
+      return orig(p, pattern, ext(def, options));
+    };
+    m.Minimatch = function Minimatch(pattern, options) {
+      return new orig.Minimatch(pattern, ext(def, options));
+    };
+    m.Minimatch.defaults = function defaults(options) {
+      return orig.defaults(ext(def, options)).Minimatch;
+    };
+    m.filter = function filter(pattern, options) {
+      return orig.filter(pattern, ext(def, options));
+    };
+    m.defaults = function defaults(options) {
+      return orig.defaults(ext(def, options));
+    };
+    m.makeRe = function makeRe(pattern, options) {
+      return orig.makeRe(pattern, ext(def, options));
+    };
+    m.braceExpand = function braceExpand(pattern, options) {
+      return orig.braceExpand(pattern, ext(def, options));
+    };
+    m.match = function(list, pattern, options) {
+      return orig.match(list, pattern, ext(def, options));
+    };
+    return m;
+  };
+  Minimatch.defaults = function(def) {
+    return minimatch.defaults(def).Minimatch;
+  };
+  function minimatch(p, pattern, options) {
+    assertValidPattern(pattern);
+    if (!options)
+      options = {};
+    if (!options.nocomment && pattern.charAt(0) === "#") {
+      return false;
+    }
+    return new Minimatch(pattern, options).match(p);
+  }
+  function Minimatch(pattern, options) {
+    if (!(this instanceof Minimatch)) {
+      return new Minimatch(pattern, options);
+    }
+    assertValidPattern(pattern);
+    if (!options)
+      options = {};
+    pattern = pattern.trim();
+    if (!options.allowWindowsEscape && path.sep !== "/") {
+      pattern = pattern.split(path.sep).join("/");
+    }
+    this.options = options;
+    this.maxGlobstarRecursion = options.maxGlobstarRecursion !== undefined ? options.maxGlobstarRecursion : 200;
+    this.set = [];
+    this.pattern = pattern;
+    this.regexp = null;
+    this.negate = false;
+    this.comment = false;
+    this.empty = false;
+    this.partial = !!options.partial;
+    this.make();
+  }
+  Minimatch.prototype.debug = function() {};
+  Minimatch.prototype.make = make;
+  function make() {
+    var pattern = this.pattern;
+    var options = this.options;
+    if (!options.nocomment && pattern.charAt(0) === "#") {
+      this.comment = true;
+      return;
+    }
+    if (!pattern) {
+      this.empty = true;
+      return;
+    }
+    this.parseNegate();
+    var set = this.globSet = this.braceExpand();
+    if (options.debug)
+      this.debug = function debug() {
+        console.error.apply(console, arguments);
+      };
+    this.debug(this.pattern, set);
+    set = this.globParts = set.map(function(s) {
+      return s.split(slashSplit);
+    });
+    this.debug(this.pattern, set);
+    set = set.map(function(s, si, set) {
+      return s.map(this.parse, this);
+    }, this);
+    this.debug(this.pattern, set);
+    set = set.filter(function(s) {
+      return s.indexOf(false) === -1;
+    });
+    this.debug(this.pattern, set);
+    this.set = set;
+  }
+  Minimatch.prototype.parseNegate = parseNegate;
+  function parseNegate() {
+    var pattern = this.pattern;
+    var negate = false;
+    var options = this.options;
+    var negateOffset = 0;
+    if (options.nonegate)
+      return;
+    for (var i = 0, l = pattern.length;i < l && pattern.charAt(i) === "!"; i++) {
+      negate = !negate;
+      negateOffset++;
+    }
+    if (negateOffset)
+      this.pattern = pattern.substr(negateOffset);
+    this.negate = negate;
+  }
+  minimatch.braceExpand = function(pattern, options) {
+    return braceExpand(pattern, options);
+  };
+  Minimatch.prototype.braceExpand = braceExpand;
+  function braceExpand(pattern, options) {
+    if (!options) {
+      if (this instanceof Minimatch) {
+        options = this.options;
+      } else {
+        options = {};
+      }
+    }
+    pattern = typeof pattern === "undefined" ? this.pattern : pattern;
+    assertValidPattern(pattern);
+    if (options.nobrace || !/\{(?:(?!\{).)*\}/.test(pattern)) {
+      return [pattern];
+    }
+    return expand(pattern);
+  }
+  var MAX_PATTERN_LENGTH = 1024 * 64;
+  var assertValidPattern = function(pattern) {
+    if (typeof pattern !== "string") {
+      throw new TypeError("invalid pattern");
+    }
+    if (pattern.length > MAX_PATTERN_LENGTH) {
+      throw new TypeError("pattern is too long");
+    }
+  };
+  Minimatch.prototype.parse = parse;
+  var SUBPARSE = {};
+  function parse(pattern, isSub) {
+    assertValidPattern(pattern);
+    var options = this.options;
+    if (pattern === "**") {
+      if (!options.noglobstar)
+        return GLOBSTAR;
+      else
+        pattern = "*";
+    }
+    if (pattern === "")
+      return "";
+    var re = "";
+    var hasMagic = !!options.nocase;
+    var escaping = false;
+    var patternListStack = [];
+    var negativeLists = [];
+    var stateChar;
+    var inClass = false;
+    var reClassStart = -1;
+    var classStart = -1;
+    var patternStart = pattern.charAt(0) === "." ? "" : options.dot ? "(?!(?:^|\\/)\\.{1,2}(?:$|\\/))" : "(?!\\.)";
+    var self = this;
+    function clearStateChar() {
+      if (stateChar) {
+        switch (stateChar) {
+          case "*":
+            re += star;
+            hasMagic = true;
+            break;
+          case "?":
+            re += qmark;
+            hasMagic = true;
+            break;
+          default:
+            re += "\\" + stateChar;
+            break;
+        }
+        self.debug("clearStateChar %j %j", stateChar, re);
+        stateChar = false;
+      }
+    }
+    for (var i = 0, len = pattern.length, c;i < len && (c = pattern.charAt(i)); i++) {
+      this.debug("%s\t%s %s %j", pattern, i, re, c);
+      if (escaping && reSpecials[c]) {
+        re += "\\" + c;
+        escaping = false;
+        continue;
+      }
+      switch (c) {
+        case "/": {
+          return false;
+        }
+        case "\\":
+          clearStateChar();
+          escaping = true;
+          continue;
+        case "?":
+        case "*":
+        case "+":
+        case "@":
+        case "!":
+          this.debug("%s\t%s %s %j <-- stateChar", pattern, i, re, c);
+          if (inClass) {
+            this.debug("  in class");
+            if (c === "!" && i === classStart + 1)
+              c = "^";
+            re += c;
+            continue;
+          }
+          if (c === "*" && stateChar === "*")
+            continue;
+          self.debug("call clearStateChar %j", stateChar);
+          clearStateChar();
+          stateChar = c;
+          if (options.noext)
+            clearStateChar();
+          continue;
+        case "(":
+          if (inClass) {
+            re += "(";
+            continue;
+          }
+          if (!stateChar) {
+            re += "\\(";
+            continue;
+          }
+          patternListStack.push({
+            type: stateChar,
+            start: i - 1,
+            reStart: re.length,
+            open: plTypes[stateChar].open,
+            close: plTypes[stateChar].close
+          });
+          re += stateChar === "!" ? "(?:(?!(?:" : "(?:";
+          this.debug("plType %j %j", stateChar, re);
+          stateChar = false;
+          continue;
+        case ")":
+          if (inClass || !patternListStack.length) {
+            re += "\\)";
+            continue;
+          }
+          clearStateChar();
+          hasMagic = true;
+          var pl = patternListStack.pop();
+          re += pl.close;
+          if (pl.type === "!") {
+            negativeLists.push(pl);
+          }
+          pl.reEnd = re.length;
+          continue;
+        case "|":
+          if (inClass || !patternListStack.length || escaping) {
+            re += "\\|";
+            escaping = false;
+            continue;
+          }
+          clearStateChar();
+          re += "|";
+          continue;
+        case "[":
+          clearStateChar();
+          if (inClass) {
+            re += "\\" + c;
+            continue;
+          }
+          inClass = true;
+          classStart = i;
+          reClassStart = re.length;
+          re += c;
+          continue;
+        case "]":
+          if (i === classStart + 1 || !inClass) {
+            re += "\\" + c;
+            escaping = false;
+            continue;
+          }
+          var cs = pattern.substring(classStart + 1, i);
+          try {
+            RegExp("[" + cs + "]");
+          } catch (er) {
+            var sp = this.parse(cs, SUBPARSE);
+            re = re.substr(0, reClassStart) + "\\[" + sp[0] + "\\]";
+            hasMagic = hasMagic || sp[1];
+            inClass = false;
+            continue;
+          }
+          hasMagic = true;
+          inClass = false;
+          re += c;
+          continue;
+        default:
+          clearStateChar();
+          if (escaping) {
+            escaping = false;
+          } else if (reSpecials[c] && !(c === "^" && inClass)) {
+            re += "\\";
+          }
+          re += c;
+      }
+    }
+    if (inClass) {
+      cs = pattern.substr(classStart + 1);
+      sp = this.parse(cs, SUBPARSE);
+      re = re.substr(0, reClassStart) + "\\[" + sp[0];
+      hasMagic = hasMagic || sp[1];
+    }
+    for (pl = patternListStack.pop();pl; pl = patternListStack.pop()) {
+      var tail = re.slice(pl.reStart + pl.open.length);
+      this.debug("setting tail", re, pl);
+      tail = tail.replace(/((?:\\{2}){0,64})(\\?)\|/g, function(_, $1, $2) {
+        if (!$2) {
+          $2 = "\\";
+        }
+        return $1 + $1 + $2 + "|";
+      });
+      this.debug(`tail=%j
+   %s`, tail, tail, pl, re);
+      var t = pl.type === "*" ? star : pl.type === "?" ? qmark : "\\" + pl.type;
+      hasMagic = true;
+      re = re.slice(0, pl.reStart) + t + "\\(" + tail;
+    }
+    clearStateChar();
+    if (escaping) {
+      re += "\\\\";
+    }
+    var addPatternStart = false;
+    switch (re.charAt(0)) {
+      case "[":
+      case ".":
+      case "(":
+        addPatternStart = true;
+    }
+    for (var n = negativeLists.length - 1;n > -1; n--) {
+      var nl = negativeLists[n];
+      var nlBefore = re.slice(0, nl.reStart);
+      var nlFirst = re.slice(nl.reStart, nl.reEnd - 8);
+      var nlLast = re.slice(nl.reEnd - 8, nl.reEnd);
+      var nlAfter = re.slice(nl.reEnd);
+      nlLast += nlAfter;
+      var openParensBefore = nlBefore.split("(").length - 1;
+      var cleanAfter = nlAfter;
+      for (i = 0;i < openParensBefore; i++) {
+        cleanAfter = cleanAfter.replace(/\)[+*?]?/, "");
+      }
+      nlAfter = cleanAfter;
+      var dollar = "";
+      if (nlAfter === "" && isSub !== SUBPARSE) {
+        dollar = "$";
+      }
+      var newRe = nlBefore + nlFirst + nlAfter + dollar + nlLast;
+      re = newRe;
+    }
+    if (re !== "" && hasMagic) {
+      re = "(?=.)" + re;
+    }
+    if (addPatternStart) {
+      re = patternStart + re;
+    }
+    if (isSub === SUBPARSE) {
+      return [re, hasMagic];
+    }
+    if (!hasMagic) {
+      return globUnescape(pattern);
+    }
+    var flags = options.nocase ? "i" : "";
+    try {
+      var regExp = new RegExp("^" + re + "$", flags);
+    } catch (er) {
+      return new RegExp("$.");
+    }
+    regExp._glob = pattern;
+    regExp._src = re;
+    return regExp;
+  }
+  minimatch.makeRe = function(pattern, options) {
+    return new Minimatch(pattern, options || {}).makeRe();
+  };
+  Minimatch.prototype.makeRe = makeRe;
+  function makeRe() {
+    if (this.regexp || this.regexp === false)
+      return this.regexp;
+    var set = this.set;
+    if (!set.length) {
+      this.regexp = false;
+      return this.regexp;
+    }
+    var options = this.options;
+    var twoStar = options.noglobstar ? star : options.dot ? twoStarDot : twoStarNoDot;
+    var flags = options.nocase ? "i" : "";
+    var re = set.map(function(pattern) {
+      return pattern.map(function(p) {
+        return p === GLOBSTAR ? twoStar : typeof p === "string" ? regExpEscape(p) : p._src;
+      }).join("\\/");
+    }).join("|");
+    re = "^(?:" + re + ")$";
+    if (this.negate)
+      re = "^(?!" + re + ").*$";
+    try {
+      this.regexp = new RegExp(re, flags);
+    } catch (ex) {
+      this.regexp = false;
+    }
+    return this.regexp;
+  }
+  minimatch.match = function(list, pattern, options) {
+    options = options || {};
+    var mm = new Minimatch(pattern, options);
+    list = list.filter(function(f) {
+      return mm.match(f);
+    });
+    if (mm.options.nonull && !list.length) {
+      list.push(pattern);
+    }
+    return list;
+  };
+  Minimatch.prototype.match = function match(f, partial) {
+    if (typeof partial === "undefined")
+      partial = this.partial;
+    this.debug("match", f, this.pattern);
+    if (this.comment)
+      return false;
+    if (this.empty)
+      return f === "";
+    if (f === "/" && partial)
+      return true;
+    var options = this.options;
+    if (path.sep !== "/") {
+      f = f.split(path.sep).join("/");
+    }
+    f = f.split(slashSplit);
+    this.debug(this.pattern, "split", f);
+    var set = this.set;
+    this.debug(this.pattern, "set", set);
+    var filename;
+    var i;
+    for (i = f.length - 1;i >= 0; i--) {
+      filename = f[i];
+      if (filename)
+        break;
+    }
+    for (i = 0;i < set.length; i++) {
+      var pattern = set[i];
+      var file = f;
+      if (options.matchBase && pattern.length === 1) {
+        file = [filename];
+      }
+      var hit = this.matchOne(file, pattern, partial);
+      if (hit) {
+        if (options.flipNegate)
+          return true;
+        return !this.negate;
+      }
+    }
+    if (options.flipNegate)
+      return false;
+    return this.negate;
+  };
+  Minimatch.prototype.matchOne = function(file, pattern, partial) {
+    if (pattern.indexOf(GLOBSTAR) !== -1) {
+      return this._matchGlobstar(file, pattern, partial, 0, 0);
+    }
+    return this._matchOne(file, pattern, partial, 0, 0);
+  };
+  Minimatch.prototype._matchGlobstar = function(file, pattern, partial, fileIndex, patternIndex) {
+    var i;
+    var firstgs = -1;
+    for (i = patternIndex;i < pattern.length; i++) {
+      if (pattern[i] === GLOBSTAR) {
+        firstgs = i;
+        break;
+      }
+    }
+    var lastgs = -1;
+    for (i = pattern.length - 1;i >= 0; i--) {
+      if (pattern[i] === GLOBSTAR) {
+        lastgs = i;
+        break;
+      }
+    }
+    var head = pattern.slice(patternIndex, firstgs);
+    var body = partial ? pattern.slice(firstgs + 1) : pattern.slice(firstgs + 1, lastgs);
+    var tail = partial ? [] : pattern.slice(lastgs + 1);
+    if (head.length) {
+      var fileHead = file.slice(fileIndex, fileIndex + head.length);
+      if (!this._matchOne(fileHead, head, partial, 0, 0)) {
+        return false;
+      }
+      fileIndex += head.length;
+    }
+    var fileTailMatch = 0;
+    if (tail.length) {
+      if (tail.length + fileIndex > file.length)
+        return false;
+      var tailStart = file.length - tail.length;
+      if (this._matchOne(file, tail, partial, tailStart, 0)) {
+        fileTailMatch = tail.length;
+      } else {
+        if (file[file.length - 1] !== "" || fileIndex + tail.length === file.length) {
+          return false;
+        }
+        tailStart--;
+        if (!this._matchOne(file, tail, partial, tailStart, 0)) {
+          return false;
+        }
+        fileTailMatch = tail.length + 1;
+      }
+    }
+    if (!body.length) {
+      var sawSome = !!fileTailMatch;
+      for (i = fileIndex;i < file.length - fileTailMatch; i++) {
+        var f = String(file[i]);
+        sawSome = true;
+        if (f === "." || f === ".." || !this.options.dot && f.charAt(0) === ".") {
+          return false;
+        }
+      }
+      return partial || sawSome;
+    }
+    var bodySegments = [[[], 0]];
+    var currentBody = bodySegments[0];
+    var nonGsParts = 0;
+    var nonGsPartsSums = [0];
+    for (var bi = 0;bi < body.length; bi++) {
+      var b = body[bi];
+      if (b === GLOBSTAR) {
+        nonGsPartsSums.push(nonGsParts);
+        currentBody = [[], 0];
+        bodySegments.push(currentBody);
+      } else {
+        currentBody[0].push(b);
+        nonGsParts++;
+      }
+    }
+    var idx = bodySegments.length - 1;
+    var fileLength = file.length - fileTailMatch;
+    for (var si = 0;si < bodySegments.length; si++) {
+      bodySegments[si][1] = fileLength - (nonGsPartsSums[idx--] + bodySegments[si][0].length);
+    }
+    return !!this._matchGlobStarBodySections(file, bodySegments, fileIndex, 0, partial, 0, !!fileTailMatch);
+  };
+  Minimatch.prototype._matchGlobStarBodySections = function(file, bodySegments, fileIndex, bodyIndex, partial, globStarDepth, sawTail) {
+    var bs = bodySegments[bodyIndex];
+    if (!bs) {
+      for (var i = fileIndex;i < file.length; i++) {
+        sawTail = true;
+        var f = file[i];
+        if (f === "." || f === ".." || !this.options.dot && f.charAt(0) === ".") {
+          return false;
+        }
+      }
+      return sawTail;
+    }
+    var body = bs[0];
+    var after = bs[1];
+    while (fileIndex <= after) {
+      var m = this._matchOne(file.slice(0, fileIndex + body.length), body, partial, fileIndex, 0);
+      if (m && globStarDepth < this.maxGlobstarRecursion) {
+        var sub = this._matchGlobStarBodySections(file, bodySegments, fileIndex + body.length, bodyIndex + 1, partial, globStarDepth + 1, sawTail);
+        if (sub !== false) {
+          return sub;
+        }
+      }
+      var f = file[fileIndex];
+      if (f === "." || f === ".." || !this.options.dot && f.charAt(0) === ".") {
+        return false;
+      }
+      fileIndex++;
+    }
+    return partial || null;
+  };
+  Minimatch.prototype._matchOne = function(file, pattern, partial, fileIndex, patternIndex) {
+    var fi, pi, fl, pl;
+    for (fi = fileIndex, pi = patternIndex, fl = file.length, pl = pattern.length;fi < fl && pi < pl; fi++, pi++) {
+      this.debug("matchOne loop");
+      var p = pattern[pi];
+      var f = file[fi];
+      this.debug(pattern, p, f);
+      if (p === false || p === GLOBSTAR)
+        return false;
+      var hit;
+      if (typeof p === "string") {
+        hit = f === p;
+        this.debug("string match", p, f, hit);
+      } else {
+        hit = f.match(p);
+        this.debug("pattern match", p, f, hit);
+      }
+      if (!hit)
+        return false;
+    }
+    if (fi === fl && pi === pl) {
+      return true;
+    } else if (fi === fl) {
+      return partial;
+    } else if (pi === pl) {
+      return fi === fl - 1 && file[fi] === "";
+    }
+    throw new Error("wtf?");
+  };
+  function globUnescape(s) {
+    return s.replace(/\\(.)/g, "$1");
+  }
+  function regExpEscape(s) {
+    return s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+  }
 });
 
 // node_modules/ms/index.js
@@ -25018,6 +25018,190 @@ var require_commonjs2 = __commonJS(function(exports) {
   Object.defineProperty(exports, "ServerCallContextController", { enumerable: true, get: function() {
     return server_call_context_1.ServerCallContextController;
   } });
+});
+
+// node_modules/@azure/storage-blob/dist/esm/generated/src/models/mappers.js
+var exports_mappers = {};
+__export(exports_mappers, {
+  AccessPolicy: () => AccessPolicy,
+  AppendBlobAppendBlockExceptionHeaders: () => AppendBlobAppendBlockExceptionHeaders,
+  AppendBlobAppendBlockFromUrlExceptionHeaders: () => AppendBlobAppendBlockFromUrlExceptionHeaders,
+  AppendBlobAppendBlockFromUrlHeaders: () => AppendBlobAppendBlockFromUrlHeaders,
+  AppendBlobAppendBlockHeaders: () => AppendBlobAppendBlockHeaders,
+  AppendBlobCreateExceptionHeaders: () => AppendBlobCreateExceptionHeaders,
+  AppendBlobCreateHeaders: () => AppendBlobCreateHeaders,
+  AppendBlobSealExceptionHeaders: () => AppendBlobSealExceptionHeaders,
+  AppendBlobSealHeaders: () => AppendBlobSealHeaders,
+  ArrowConfiguration: () => ArrowConfiguration,
+  ArrowField: () => ArrowField,
+  BlobAbortCopyFromURLExceptionHeaders: () => BlobAbortCopyFromURLExceptionHeaders,
+  BlobAbortCopyFromURLHeaders: () => BlobAbortCopyFromURLHeaders,
+  BlobAcquireLeaseExceptionHeaders: () => BlobAcquireLeaseExceptionHeaders,
+  BlobAcquireLeaseHeaders: () => BlobAcquireLeaseHeaders,
+  BlobBreakLeaseExceptionHeaders: () => BlobBreakLeaseExceptionHeaders,
+  BlobBreakLeaseHeaders: () => BlobBreakLeaseHeaders,
+  BlobChangeLeaseExceptionHeaders: () => BlobChangeLeaseExceptionHeaders,
+  BlobChangeLeaseHeaders: () => BlobChangeLeaseHeaders,
+  BlobCopyFromURLExceptionHeaders: () => BlobCopyFromURLExceptionHeaders,
+  BlobCopyFromURLHeaders: () => BlobCopyFromURLHeaders,
+  BlobCreateSnapshotExceptionHeaders: () => BlobCreateSnapshotExceptionHeaders,
+  BlobCreateSnapshotHeaders: () => BlobCreateSnapshotHeaders,
+  BlobDeleteExceptionHeaders: () => BlobDeleteExceptionHeaders,
+  BlobDeleteHeaders: () => BlobDeleteHeaders,
+  BlobDeleteImmutabilityPolicyExceptionHeaders: () => BlobDeleteImmutabilityPolicyExceptionHeaders,
+  BlobDeleteImmutabilityPolicyHeaders: () => BlobDeleteImmutabilityPolicyHeaders,
+  BlobDownloadExceptionHeaders: () => BlobDownloadExceptionHeaders,
+  BlobDownloadHeaders: () => BlobDownloadHeaders,
+  BlobFlatListSegment: () => BlobFlatListSegment,
+  BlobGetAccountInfoExceptionHeaders: () => BlobGetAccountInfoExceptionHeaders,
+  BlobGetAccountInfoHeaders: () => BlobGetAccountInfoHeaders,
+  BlobGetPropertiesExceptionHeaders: () => BlobGetPropertiesExceptionHeaders,
+  BlobGetPropertiesHeaders: () => BlobGetPropertiesHeaders,
+  BlobGetTagsExceptionHeaders: () => BlobGetTagsExceptionHeaders,
+  BlobGetTagsHeaders: () => BlobGetTagsHeaders,
+  BlobHierarchyListSegment: () => BlobHierarchyListSegment,
+  BlobItemInternal: () => BlobItemInternal,
+  BlobName: () => BlobName,
+  BlobPrefix: () => BlobPrefix,
+  BlobPropertiesInternal: () => BlobPropertiesInternal,
+  BlobQueryExceptionHeaders: () => BlobQueryExceptionHeaders,
+  BlobQueryHeaders: () => BlobQueryHeaders,
+  BlobReleaseLeaseExceptionHeaders: () => BlobReleaseLeaseExceptionHeaders,
+  BlobReleaseLeaseHeaders: () => BlobReleaseLeaseHeaders,
+  BlobRenewLeaseExceptionHeaders: () => BlobRenewLeaseExceptionHeaders,
+  BlobRenewLeaseHeaders: () => BlobRenewLeaseHeaders,
+  BlobServiceProperties: () => BlobServiceProperties,
+  BlobServiceStatistics: () => BlobServiceStatistics,
+  BlobSetExpiryExceptionHeaders: () => BlobSetExpiryExceptionHeaders,
+  BlobSetExpiryHeaders: () => BlobSetExpiryHeaders,
+  BlobSetHttpHeadersExceptionHeaders: () => BlobSetHttpHeadersExceptionHeaders,
+  BlobSetHttpHeadersHeaders: () => BlobSetHttpHeadersHeaders,
+  BlobSetImmutabilityPolicyExceptionHeaders: () => BlobSetImmutabilityPolicyExceptionHeaders,
+  BlobSetImmutabilityPolicyHeaders: () => BlobSetImmutabilityPolicyHeaders,
+  BlobSetLegalHoldExceptionHeaders: () => BlobSetLegalHoldExceptionHeaders,
+  BlobSetLegalHoldHeaders: () => BlobSetLegalHoldHeaders,
+  BlobSetMetadataExceptionHeaders: () => BlobSetMetadataExceptionHeaders,
+  BlobSetMetadataHeaders: () => BlobSetMetadataHeaders,
+  BlobSetTagsExceptionHeaders: () => BlobSetTagsExceptionHeaders,
+  BlobSetTagsHeaders: () => BlobSetTagsHeaders,
+  BlobSetTierExceptionHeaders: () => BlobSetTierExceptionHeaders,
+  BlobSetTierHeaders: () => BlobSetTierHeaders,
+  BlobStartCopyFromURLExceptionHeaders: () => BlobStartCopyFromURLExceptionHeaders,
+  BlobStartCopyFromURLHeaders: () => BlobStartCopyFromURLHeaders,
+  BlobTag: () => BlobTag,
+  BlobTags: () => BlobTags,
+  BlobUndeleteExceptionHeaders: () => BlobUndeleteExceptionHeaders,
+  BlobUndeleteHeaders: () => BlobUndeleteHeaders,
+  Block: () => Block,
+  BlockBlobCommitBlockListExceptionHeaders: () => BlockBlobCommitBlockListExceptionHeaders,
+  BlockBlobCommitBlockListHeaders: () => BlockBlobCommitBlockListHeaders,
+  BlockBlobGetBlockListExceptionHeaders: () => BlockBlobGetBlockListExceptionHeaders,
+  BlockBlobGetBlockListHeaders: () => BlockBlobGetBlockListHeaders,
+  BlockBlobPutBlobFromUrlExceptionHeaders: () => BlockBlobPutBlobFromUrlExceptionHeaders,
+  BlockBlobPutBlobFromUrlHeaders: () => BlockBlobPutBlobFromUrlHeaders,
+  BlockBlobStageBlockExceptionHeaders: () => BlockBlobStageBlockExceptionHeaders,
+  BlockBlobStageBlockFromURLExceptionHeaders: () => BlockBlobStageBlockFromURLExceptionHeaders,
+  BlockBlobStageBlockFromURLHeaders: () => BlockBlobStageBlockFromURLHeaders,
+  BlockBlobStageBlockHeaders: () => BlockBlobStageBlockHeaders,
+  BlockBlobUploadExceptionHeaders: () => BlockBlobUploadExceptionHeaders,
+  BlockBlobUploadHeaders: () => BlockBlobUploadHeaders,
+  BlockList: () => BlockList,
+  BlockLookupList: () => BlockLookupList,
+  ClearRange: () => ClearRange,
+  ContainerAcquireLeaseExceptionHeaders: () => ContainerAcquireLeaseExceptionHeaders,
+  ContainerAcquireLeaseHeaders: () => ContainerAcquireLeaseHeaders,
+  ContainerBreakLeaseExceptionHeaders: () => ContainerBreakLeaseExceptionHeaders,
+  ContainerBreakLeaseHeaders: () => ContainerBreakLeaseHeaders,
+  ContainerChangeLeaseExceptionHeaders: () => ContainerChangeLeaseExceptionHeaders,
+  ContainerChangeLeaseHeaders: () => ContainerChangeLeaseHeaders,
+  ContainerCreateExceptionHeaders: () => ContainerCreateExceptionHeaders,
+  ContainerCreateHeaders: () => ContainerCreateHeaders,
+  ContainerDeleteExceptionHeaders: () => ContainerDeleteExceptionHeaders,
+  ContainerDeleteHeaders: () => ContainerDeleteHeaders,
+  ContainerFilterBlobsExceptionHeaders: () => ContainerFilterBlobsExceptionHeaders,
+  ContainerFilterBlobsHeaders: () => ContainerFilterBlobsHeaders,
+  ContainerGetAccessPolicyExceptionHeaders: () => ContainerGetAccessPolicyExceptionHeaders,
+  ContainerGetAccessPolicyHeaders: () => ContainerGetAccessPolicyHeaders,
+  ContainerGetAccountInfoExceptionHeaders: () => ContainerGetAccountInfoExceptionHeaders,
+  ContainerGetAccountInfoHeaders: () => ContainerGetAccountInfoHeaders,
+  ContainerGetPropertiesExceptionHeaders: () => ContainerGetPropertiesExceptionHeaders,
+  ContainerGetPropertiesHeaders: () => ContainerGetPropertiesHeaders,
+  ContainerItem: () => ContainerItem,
+  ContainerListBlobFlatSegmentExceptionHeaders: () => ContainerListBlobFlatSegmentExceptionHeaders,
+  ContainerListBlobFlatSegmentHeaders: () => ContainerListBlobFlatSegmentHeaders,
+  ContainerListBlobHierarchySegmentExceptionHeaders: () => ContainerListBlobHierarchySegmentExceptionHeaders,
+  ContainerListBlobHierarchySegmentHeaders: () => ContainerListBlobHierarchySegmentHeaders,
+  ContainerProperties: () => ContainerProperties,
+  ContainerReleaseLeaseExceptionHeaders: () => ContainerReleaseLeaseExceptionHeaders,
+  ContainerReleaseLeaseHeaders: () => ContainerReleaseLeaseHeaders,
+  ContainerRenameExceptionHeaders: () => ContainerRenameExceptionHeaders,
+  ContainerRenameHeaders: () => ContainerRenameHeaders,
+  ContainerRenewLeaseExceptionHeaders: () => ContainerRenewLeaseExceptionHeaders,
+  ContainerRenewLeaseHeaders: () => ContainerRenewLeaseHeaders,
+  ContainerRestoreExceptionHeaders: () => ContainerRestoreExceptionHeaders,
+  ContainerRestoreHeaders: () => ContainerRestoreHeaders,
+  ContainerSetAccessPolicyExceptionHeaders: () => ContainerSetAccessPolicyExceptionHeaders,
+  ContainerSetAccessPolicyHeaders: () => ContainerSetAccessPolicyHeaders,
+  ContainerSetMetadataExceptionHeaders: () => ContainerSetMetadataExceptionHeaders,
+  ContainerSetMetadataHeaders: () => ContainerSetMetadataHeaders,
+  ContainerSubmitBatchExceptionHeaders: () => ContainerSubmitBatchExceptionHeaders,
+  ContainerSubmitBatchHeaders: () => ContainerSubmitBatchHeaders,
+  CorsRule: () => CorsRule,
+  DelimitedTextConfiguration: () => DelimitedTextConfiguration,
+  FilterBlobItem: () => FilterBlobItem,
+  FilterBlobSegment: () => FilterBlobSegment,
+  GeoReplication: () => GeoReplication,
+  JsonTextConfiguration: () => JsonTextConfiguration,
+  KeyInfo: () => KeyInfo,
+  ListBlobsFlatSegmentResponse: () => ListBlobsFlatSegmentResponse,
+  ListBlobsHierarchySegmentResponse: () => ListBlobsHierarchySegmentResponse,
+  ListContainersSegmentResponse: () => ListContainersSegmentResponse,
+  Logging: () => Logging,
+  Metrics: () => Metrics,
+  PageBlobClearPagesExceptionHeaders: () => PageBlobClearPagesExceptionHeaders,
+  PageBlobClearPagesHeaders: () => PageBlobClearPagesHeaders,
+  PageBlobCopyIncrementalExceptionHeaders: () => PageBlobCopyIncrementalExceptionHeaders,
+  PageBlobCopyIncrementalHeaders: () => PageBlobCopyIncrementalHeaders,
+  PageBlobCreateExceptionHeaders: () => PageBlobCreateExceptionHeaders,
+  PageBlobCreateHeaders: () => PageBlobCreateHeaders,
+  PageBlobGetPageRangesDiffExceptionHeaders: () => PageBlobGetPageRangesDiffExceptionHeaders,
+  PageBlobGetPageRangesDiffHeaders: () => PageBlobGetPageRangesDiffHeaders,
+  PageBlobGetPageRangesExceptionHeaders: () => PageBlobGetPageRangesExceptionHeaders,
+  PageBlobGetPageRangesHeaders: () => PageBlobGetPageRangesHeaders,
+  PageBlobResizeExceptionHeaders: () => PageBlobResizeExceptionHeaders,
+  PageBlobResizeHeaders: () => PageBlobResizeHeaders,
+  PageBlobUpdateSequenceNumberExceptionHeaders: () => PageBlobUpdateSequenceNumberExceptionHeaders,
+  PageBlobUpdateSequenceNumberHeaders: () => PageBlobUpdateSequenceNumberHeaders,
+  PageBlobUploadPagesExceptionHeaders: () => PageBlobUploadPagesExceptionHeaders,
+  PageBlobUploadPagesFromURLExceptionHeaders: () => PageBlobUploadPagesFromURLExceptionHeaders,
+  PageBlobUploadPagesFromURLHeaders: () => PageBlobUploadPagesFromURLHeaders,
+  PageBlobUploadPagesHeaders: () => PageBlobUploadPagesHeaders,
+  PageList: () => PageList,
+  PageRange: () => PageRange,
+  QueryFormat: () => QueryFormat,
+  QueryRequest: () => QueryRequest,
+  QuerySerialization: () => QuerySerialization,
+  RetentionPolicy: () => RetentionPolicy,
+  ServiceFilterBlobsExceptionHeaders: () => ServiceFilterBlobsExceptionHeaders,
+  ServiceFilterBlobsHeaders: () => ServiceFilterBlobsHeaders,
+  ServiceGetAccountInfoExceptionHeaders: () => ServiceGetAccountInfoExceptionHeaders,
+  ServiceGetAccountInfoHeaders: () => ServiceGetAccountInfoHeaders,
+  ServiceGetPropertiesExceptionHeaders: () => ServiceGetPropertiesExceptionHeaders,
+  ServiceGetPropertiesHeaders: () => ServiceGetPropertiesHeaders,
+  ServiceGetStatisticsExceptionHeaders: () => ServiceGetStatisticsExceptionHeaders,
+  ServiceGetStatisticsHeaders: () => ServiceGetStatisticsHeaders,
+  ServiceGetUserDelegationKeyExceptionHeaders: () => ServiceGetUserDelegationKeyExceptionHeaders,
+  ServiceGetUserDelegationKeyHeaders: () => ServiceGetUserDelegationKeyHeaders,
+  ServiceListContainersSegmentExceptionHeaders: () => ServiceListContainersSegmentExceptionHeaders,
+  ServiceListContainersSegmentHeaders: () => ServiceListContainersSegmentHeaders,
+  ServiceSetPropertiesExceptionHeaders: () => ServiceSetPropertiesExceptionHeaders,
+  ServiceSetPropertiesHeaders: () => ServiceSetPropertiesHeaders,
+  ServiceSubmitBatchExceptionHeaders: () => ServiceSubmitBatchExceptionHeaders,
+  ServiceSubmitBatchHeaders: () => ServiceSubmitBatchHeaders,
+  SignedIdentifier: () => SignedIdentifier,
+  StaticWebsite: () => StaticWebsite,
+  StorageError: () => StorageError,
+  UserDelegationKey: () => UserDelegationKey
 });
 
 // node_modules/@actions/core/lib/command.js
@@ -41661,188 +41845,6 @@ function isCoreHttpPolicyFactory(factory) {
   });
 }
 // node_modules/@azure/storage-blob/dist/esm/generated/src/models/mappers.js
-var exports_mappers = {};
-__export(exports_mappers, {
-  AccessPolicy: () => AccessPolicy,
-  AppendBlobAppendBlockExceptionHeaders: () => AppendBlobAppendBlockExceptionHeaders,
-  AppendBlobAppendBlockFromUrlExceptionHeaders: () => AppendBlobAppendBlockFromUrlExceptionHeaders,
-  AppendBlobAppendBlockFromUrlHeaders: () => AppendBlobAppendBlockFromUrlHeaders,
-  AppendBlobAppendBlockHeaders: () => AppendBlobAppendBlockHeaders,
-  AppendBlobCreateExceptionHeaders: () => AppendBlobCreateExceptionHeaders,
-  AppendBlobCreateHeaders: () => AppendBlobCreateHeaders,
-  AppendBlobSealExceptionHeaders: () => AppendBlobSealExceptionHeaders,
-  AppendBlobSealHeaders: () => AppendBlobSealHeaders,
-  ArrowConfiguration: () => ArrowConfiguration,
-  ArrowField: () => ArrowField,
-  BlobAbortCopyFromURLExceptionHeaders: () => BlobAbortCopyFromURLExceptionHeaders,
-  BlobAbortCopyFromURLHeaders: () => BlobAbortCopyFromURLHeaders,
-  BlobAcquireLeaseExceptionHeaders: () => BlobAcquireLeaseExceptionHeaders,
-  BlobAcquireLeaseHeaders: () => BlobAcquireLeaseHeaders,
-  BlobBreakLeaseExceptionHeaders: () => BlobBreakLeaseExceptionHeaders,
-  BlobBreakLeaseHeaders: () => BlobBreakLeaseHeaders,
-  BlobChangeLeaseExceptionHeaders: () => BlobChangeLeaseExceptionHeaders,
-  BlobChangeLeaseHeaders: () => BlobChangeLeaseHeaders,
-  BlobCopyFromURLExceptionHeaders: () => BlobCopyFromURLExceptionHeaders,
-  BlobCopyFromURLHeaders: () => BlobCopyFromURLHeaders,
-  BlobCreateSnapshotExceptionHeaders: () => BlobCreateSnapshotExceptionHeaders,
-  BlobCreateSnapshotHeaders: () => BlobCreateSnapshotHeaders,
-  BlobDeleteExceptionHeaders: () => BlobDeleteExceptionHeaders,
-  BlobDeleteHeaders: () => BlobDeleteHeaders,
-  BlobDeleteImmutabilityPolicyExceptionHeaders: () => BlobDeleteImmutabilityPolicyExceptionHeaders,
-  BlobDeleteImmutabilityPolicyHeaders: () => BlobDeleteImmutabilityPolicyHeaders,
-  BlobDownloadExceptionHeaders: () => BlobDownloadExceptionHeaders,
-  BlobDownloadHeaders: () => BlobDownloadHeaders,
-  BlobFlatListSegment: () => BlobFlatListSegment,
-  BlobGetAccountInfoExceptionHeaders: () => BlobGetAccountInfoExceptionHeaders,
-  BlobGetAccountInfoHeaders: () => BlobGetAccountInfoHeaders,
-  BlobGetPropertiesExceptionHeaders: () => BlobGetPropertiesExceptionHeaders,
-  BlobGetPropertiesHeaders: () => BlobGetPropertiesHeaders,
-  BlobGetTagsExceptionHeaders: () => BlobGetTagsExceptionHeaders,
-  BlobGetTagsHeaders: () => BlobGetTagsHeaders,
-  BlobHierarchyListSegment: () => BlobHierarchyListSegment,
-  BlobItemInternal: () => BlobItemInternal,
-  BlobName: () => BlobName,
-  BlobPrefix: () => BlobPrefix,
-  BlobPropertiesInternal: () => BlobPropertiesInternal,
-  BlobQueryExceptionHeaders: () => BlobQueryExceptionHeaders,
-  BlobQueryHeaders: () => BlobQueryHeaders,
-  BlobReleaseLeaseExceptionHeaders: () => BlobReleaseLeaseExceptionHeaders,
-  BlobReleaseLeaseHeaders: () => BlobReleaseLeaseHeaders,
-  BlobRenewLeaseExceptionHeaders: () => BlobRenewLeaseExceptionHeaders,
-  BlobRenewLeaseHeaders: () => BlobRenewLeaseHeaders,
-  BlobServiceProperties: () => BlobServiceProperties,
-  BlobServiceStatistics: () => BlobServiceStatistics,
-  BlobSetExpiryExceptionHeaders: () => BlobSetExpiryExceptionHeaders,
-  BlobSetExpiryHeaders: () => BlobSetExpiryHeaders,
-  BlobSetHttpHeadersExceptionHeaders: () => BlobSetHttpHeadersExceptionHeaders,
-  BlobSetHttpHeadersHeaders: () => BlobSetHttpHeadersHeaders,
-  BlobSetImmutabilityPolicyExceptionHeaders: () => BlobSetImmutabilityPolicyExceptionHeaders,
-  BlobSetImmutabilityPolicyHeaders: () => BlobSetImmutabilityPolicyHeaders,
-  BlobSetLegalHoldExceptionHeaders: () => BlobSetLegalHoldExceptionHeaders,
-  BlobSetLegalHoldHeaders: () => BlobSetLegalHoldHeaders,
-  BlobSetMetadataExceptionHeaders: () => BlobSetMetadataExceptionHeaders,
-  BlobSetMetadataHeaders: () => BlobSetMetadataHeaders,
-  BlobSetTagsExceptionHeaders: () => BlobSetTagsExceptionHeaders,
-  BlobSetTagsHeaders: () => BlobSetTagsHeaders,
-  BlobSetTierExceptionHeaders: () => BlobSetTierExceptionHeaders,
-  BlobSetTierHeaders: () => BlobSetTierHeaders,
-  BlobStartCopyFromURLExceptionHeaders: () => BlobStartCopyFromURLExceptionHeaders,
-  BlobStartCopyFromURLHeaders: () => BlobStartCopyFromURLHeaders,
-  BlobTag: () => BlobTag,
-  BlobTags: () => BlobTags,
-  BlobUndeleteExceptionHeaders: () => BlobUndeleteExceptionHeaders,
-  BlobUndeleteHeaders: () => BlobUndeleteHeaders,
-  Block: () => Block,
-  BlockBlobCommitBlockListExceptionHeaders: () => BlockBlobCommitBlockListExceptionHeaders,
-  BlockBlobCommitBlockListHeaders: () => BlockBlobCommitBlockListHeaders,
-  BlockBlobGetBlockListExceptionHeaders: () => BlockBlobGetBlockListExceptionHeaders,
-  BlockBlobGetBlockListHeaders: () => BlockBlobGetBlockListHeaders,
-  BlockBlobPutBlobFromUrlExceptionHeaders: () => BlockBlobPutBlobFromUrlExceptionHeaders,
-  BlockBlobPutBlobFromUrlHeaders: () => BlockBlobPutBlobFromUrlHeaders,
-  BlockBlobStageBlockExceptionHeaders: () => BlockBlobStageBlockExceptionHeaders,
-  BlockBlobStageBlockFromURLExceptionHeaders: () => BlockBlobStageBlockFromURLExceptionHeaders,
-  BlockBlobStageBlockFromURLHeaders: () => BlockBlobStageBlockFromURLHeaders,
-  BlockBlobStageBlockHeaders: () => BlockBlobStageBlockHeaders,
-  BlockBlobUploadExceptionHeaders: () => BlockBlobUploadExceptionHeaders,
-  BlockBlobUploadHeaders: () => BlockBlobUploadHeaders,
-  BlockList: () => BlockList,
-  BlockLookupList: () => BlockLookupList,
-  ClearRange: () => ClearRange,
-  ContainerAcquireLeaseExceptionHeaders: () => ContainerAcquireLeaseExceptionHeaders,
-  ContainerAcquireLeaseHeaders: () => ContainerAcquireLeaseHeaders,
-  ContainerBreakLeaseExceptionHeaders: () => ContainerBreakLeaseExceptionHeaders,
-  ContainerBreakLeaseHeaders: () => ContainerBreakLeaseHeaders,
-  ContainerChangeLeaseExceptionHeaders: () => ContainerChangeLeaseExceptionHeaders,
-  ContainerChangeLeaseHeaders: () => ContainerChangeLeaseHeaders,
-  ContainerCreateExceptionHeaders: () => ContainerCreateExceptionHeaders,
-  ContainerCreateHeaders: () => ContainerCreateHeaders,
-  ContainerDeleteExceptionHeaders: () => ContainerDeleteExceptionHeaders,
-  ContainerDeleteHeaders: () => ContainerDeleteHeaders,
-  ContainerFilterBlobsExceptionHeaders: () => ContainerFilterBlobsExceptionHeaders,
-  ContainerFilterBlobsHeaders: () => ContainerFilterBlobsHeaders,
-  ContainerGetAccessPolicyExceptionHeaders: () => ContainerGetAccessPolicyExceptionHeaders,
-  ContainerGetAccessPolicyHeaders: () => ContainerGetAccessPolicyHeaders,
-  ContainerGetAccountInfoExceptionHeaders: () => ContainerGetAccountInfoExceptionHeaders,
-  ContainerGetAccountInfoHeaders: () => ContainerGetAccountInfoHeaders,
-  ContainerGetPropertiesExceptionHeaders: () => ContainerGetPropertiesExceptionHeaders,
-  ContainerGetPropertiesHeaders: () => ContainerGetPropertiesHeaders,
-  ContainerItem: () => ContainerItem,
-  ContainerListBlobFlatSegmentExceptionHeaders: () => ContainerListBlobFlatSegmentExceptionHeaders,
-  ContainerListBlobFlatSegmentHeaders: () => ContainerListBlobFlatSegmentHeaders,
-  ContainerListBlobHierarchySegmentExceptionHeaders: () => ContainerListBlobHierarchySegmentExceptionHeaders,
-  ContainerListBlobHierarchySegmentHeaders: () => ContainerListBlobHierarchySegmentHeaders,
-  ContainerProperties: () => ContainerProperties,
-  ContainerReleaseLeaseExceptionHeaders: () => ContainerReleaseLeaseExceptionHeaders,
-  ContainerReleaseLeaseHeaders: () => ContainerReleaseLeaseHeaders,
-  ContainerRenameExceptionHeaders: () => ContainerRenameExceptionHeaders,
-  ContainerRenameHeaders: () => ContainerRenameHeaders,
-  ContainerRenewLeaseExceptionHeaders: () => ContainerRenewLeaseExceptionHeaders,
-  ContainerRenewLeaseHeaders: () => ContainerRenewLeaseHeaders,
-  ContainerRestoreExceptionHeaders: () => ContainerRestoreExceptionHeaders,
-  ContainerRestoreHeaders: () => ContainerRestoreHeaders,
-  ContainerSetAccessPolicyExceptionHeaders: () => ContainerSetAccessPolicyExceptionHeaders,
-  ContainerSetAccessPolicyHeaders: () => ContainerSetAccessPolicyHeaders,
-  ContainerSetMetadataExceptionHeaders: () => ContainerSetMetadataExceptionHeaders,
-  ContainerSetMetadataHeaders: () => ContainerSetMetadataHeaders,
-  ContainerSubmitBatchExceptionHeaders: () => ContainerSubmitBatchExceptionHeaders,
-  ContainerSubmitBatchHeaders: () => ContainerSubmitBatchHeaders,
-  CorsRule: () => CorsRule,
-  DelimitedTextConfiguration: () => DelimitedTextConfiguration,
-  FilterBlobItem: () => FilterBlobItem,
-  FilterBlobSegment: () => FilterBlobSegment,
-  GeoReplication: () => GeoReplication,
-  JsonTextConfiguration: () => JsonTextConfiguration,
-  KeyInfo: () => KeyInfo,
-  ListBlobsFlatSegmentResponse: () => ListBlobsFlatSegmentResponse,
-  ListBlobsHierarchySegmentResponse: () => ListBlobsHierarchySegmentResponse,
-  ListContainersSegmentResponse: () => ListContainersSegmentResponse,
-  Logging: () => Logging,
-  Metrics: () => Metrics,
-  PageBlobClearPagesExceptionHeaders: () => PageBlobClearPagesExceptionHeaders,
-  PageBlobClearPagesHeaders: () => PageBlobClearPagesHeaders,
-  PageBlobCopyIncrementalExceptionHeaders: () => PageBlobCopyIncrementalExceptionHeaders,
-  PageBlobCopyIncrementalHeaders: () => PageBlobCopyIncrementalHeaders,
-  PageBlobCreateExceptionHeaders: () => PageBlobCreateExceptionHeaders,
-  PageBlobCreateHeaders: () => PageBlobCreateHeaders,
-  PageBlobGetPageRangesDiffExceptionHeaders: () => PageBlobGetPageRangesDiffExceptionHeaders,
-  PageBlobGetPageRangesDiffHeaders: () => PageBlobGetPageRangesDiffHeaders,
-  PageBlobGetPageRangesExceptionHeaders: () => PageBlobGetPageRangesExceptionHeaders,
-  PageBlobGetPageRangesHeaders: () => PageBlobGetPageRangesHeaders,
-  PageBlobResizeExceptionHeaders: () => PageBlobResizeExceptionHeaders,
-  PageBlobResizeHeaders: () => PageBlobResizeHeaders,
-  PageBlobUpdateSequenceNumberExceptionHeaders: () => PageBlobUpdateSequenceNumberExceptionHeaders,
-  PageBlobUpdateSequenceNumberHeaders: () => PageBlobUpdateSequenceNumberHeaders,
-  PageBlobUploadPagesExceptionHeaders: () => PageBlobUploadPagesExceptionHeaders,
-  PageBlobUploadPagesFromURLExceptionHeaders: () => PageBlobUploadPagesFromURLExceptionHeaders,
-  PageBlobUploadPagesFromURLHeaders: () => PageBlobUploadPagesFromURLHeaders,
-  PageBlobUploadPagesHeaders: () => PageBlobUploadPagesHeaders,
-  PageList: () => PageList,
-  PageRange: () => PageRange,
-  QueryFormat: () => QueryFormat,
-  QueryRequest: () => QueryRequest,
-  QuerySerialization: () => QuerySerialization,
-  RetentionPolicy: () => RetentionPolicy,
-  ServiceFilterBlobsExceptionHeaders: () => ServiceFilterBlobsExceptionHeaders,
-  ServiceFilterBlobsHeaders: () => ServiceFilterBlobsHeaders,
-  ServiceGetAccountInfoExceptionHeaders: () => ServiceGetAccountInfoExceptionHeaders,
-  ServiceGetAccountInfoHeaders: () => ServiceGetAccountInfoHeaders,
-  ServiceGetPropertiesExceptionHeaders: () => ServiceGetPropertiesExceptionHeaders,
-  ServiceGetPropertiesHeaders: () => ServiceGetPropertiesHeaders,
-  ServiceGetStatisticsExceptionHeaders: () => ServiceGetStatisticsExceptionHeaders,
-  ServiceGetStatisticsHeaders: () => ServiceGetStatisticsHeaders,
-  ServiceGetUserDelegationKeyExceptionHeaders: () => ServiceGetUserDelegationKeyExceptionHeaders,
-  ServiceGetUserDelegationKeyHeaders: () => ServiceGetUserDelegationKeyHeaders,
-  ServiceListContainersSegmentExceptionHeaders: () => ServiceListContainersSegmentExceptionHeaders,
-  ServiceListContainersSegmentHeaders: () => ServiceListContainersSegmentHeaders,
-  ServiceSetPropertiesExceptionHeaders: () => ServiceSetPropertiesExceptionHeaders,
-  ServiceSetPropertiesHeaders: () => ServiceSetPropertiesHeaders,
-  ServiceSubmitBatchExceptionHeaders: () => ServiceSubmitBatchExceptionHeaders,
-  ServiceSubmitBatchHeaders: () => ServiceSubmitBatchHeaders,
-  SignedIdentifier: () => SignedIdentifier,
-  StaticWebsite: () => StaticWebsite,
-  StorageError: () => StorageError,
-  UserDelegationKey: () => UserDelegationKey
-});
 var BlobServiceProperties = {
   serializedName: "BlobServiceProperties",
   xmlName: "StorageServiceProperties",
@@ -61614,17 +61616,35 @@ function parseCacheMode(input) {
   }
   return normalized;
 }
+function extraKeySegment(extra) {
+  const sanitized = (extra ?? "").trim().replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 100);
+  return sanitized.length > 0 ? sanitized : "default";
+}
 function tarballCacheKey(triple, version) {
   return `setup-zig-tarball-${triple}-${version}`;
 }
-function globalCacheKey(triple, version) {
-  return `setup-zig-global-cache-${triple}-${version}`;
+function globalCacheRestoreKeys(triple, version, extra) {
+  return [
+    `setup-zig-global-cache-${triple}-${version}-${extraKeySegment(extra)}-`
+  ];
 }
-function localCacheKey(triple, version, buildHash) {
-  return `setup-zig-local-cache-${triple}-${version}-${buildHash}`;
+function globalCacheKey(triple, version, extra, runId, runAttempt) {
+  return `${globalCacheRestoreKeys(triple, version, extra)[0]}${runId}-${runAttempt}`;
 }
-function localCacheRestoreKeys(triple, version) {
-  return [`setup-zig-local-cache-${triple}-${version}-`];
+function localCacheKey(triple, version, buildHash, extra) {
+  const prefix = localCacheRestoreKeys(triple, version, extra)[0];
+  return `${prefix}${buildHash}`;
+}
+function localCacheRestoreKeys(triple, version, extra) {
+  return [
+    `setup-zig-local-cache-${triple}-${version}-${extraKeySegment(extra)}-`
+  ];
+}
+function getRunIdentity() {
+  return {
+    runId: process.env.GITHUB_RUN_ID || "0",
+    runAttempt: process.env.GITHUB_RUN_ATTEMPT || "1"
+  };
 }
 function getZigGlobalCacheDir() {
   const env = process.env.ZIG_GLOBAL_CACHE_DIR;
@@ -61650,4 +61670,48 @@ async function saveCache(paths, key) {
   await saveCache3(paths, key);
 }
 
-export { __toESM, HttpClient, cp, rmRF, mkdirP, which, exec, addPath, getInput, setOutput, setFailed, isDebug, debug, warning, info, saveState, getState, require_semver, parseCacheMode, tarballCacheKey, globalCacheKey, localCacheKey, localCacheRestoreKeys, getZigGlobalCacheDir, getZigLocalCacheDir, restoreCache, saveCache };
+// src/cache-size.ts
+import { readdir as readdir2, rm as rm2, stat as stat2 } from "node:fs/promises";
+import path13 from "node:path";
+var DEFAULT_CACHE_SIZE_LIMIT_MIB = 2048;
+function parseCacheSizeLimit(input) {
+  const trimmed = (input ?? "").trim();
+  if (trimmed === "") {
+    return DEFAULT_CACHE_SIZE_LIMIT_MIB;
+  }
+  if (!/^\d+$/.test(trimmed)) {
+    throw new Error(`Invalid cache-size-limit "${input}": expected a non-negative integer (MiB)`);
+  }
+  return Number.parseInt(trimmed, 10);
+}
+async function dirSize(dir) {
+  let entries;
+  try {
+    entries = await readdir2(dir, { withFileTypes: true });
+  } catch {
+    return 0;
+  }
+  let total = 0;
+  for (const entry of entries) {
+    const full = path13.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      total += await dirSize(full);
+    } else if (entry.isFile()) {
+      try {
+        total += (await stat2(full)).size;
+      } catch {}
+    }
+  }
+  return total;
+}
+async function clearDir(dir) {
+  let entries;
+  try {
+    entries = await readdir2(dir);
+  } catch {
+    return;
+  }
+  await Promise.all(entries.map((name) => rm2(path13.join(dir, name), { recursive: true, force: true })));
+}
+
+export { __toESM, HttpClient, cp, rmRF, mkdirP, which, exec, addPath, getInput, setOutput, setFailed, isDebug, debug, warning, info, saveState, getState, require_semver, parseCacheMode, tarballCacheKey, globalCacheRestoreKeys, globalCacheKey, localCacheKey, localCacheRestoreKeys, getRunIdentity, getZigGlobalCacheDir, getZigLocalCacheDir, restoreCache, saveCache, parseCacheSizeLimit, dirSize, clearDir };

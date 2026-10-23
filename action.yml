@@ -17,6 +17,21 @@ inputs:
       "false" disables caching.
     required: false
     default: binary
+  cache-key:
+    description: |
+      Additional component for the compile cache keys. Use this to keep matrix
+      jobs that build with different options (for example different targets or
+      CPU models) in separate caches. The runner OS and architecture are always
+      included automatically.
+    required: false
+  cache-size-limit:
+    description: |
+      Maximum size of each cached Zig compile cache directory, in MiB.
+      Directories that exceed the limit are cleared before being saved so that
+      stale artifacts do not exhaust the repository cache quota.
+      Set to 0 to disable the limit.
+    required: false
+    default: "2048"
 
 outputs:
   version:

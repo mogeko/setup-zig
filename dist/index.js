@@ -17,14 +17,17 @@ import {
   require_semver,
   parseCacheMode,
   tarballCacheKey,
+  globalCacheRestoreKeys,
   globalCacheKey,
   localCacheKey,
   localCacheRestoreKeys,
+  getRunIdentity,
   getZigGlobalCacheDir,
   getZigLocalCacheDir,
   restoreCache,
-  saveCache
-} from "./chunk-qxqvqpzh.js";
+  saveCache,
+  parseCacheSizeLimit
+} from "./chunk-s2gajng4.js";
 
 // src/main.ts
 import { createHash as createHash3 } from "node:crypto";
@@ -738,6 +741,8 @@ async function run() {
   try {
     const requestedVersion = getInput("version");
     const cacheMode = parseCacheMode(getInput("cache"));
+    const extraCacheKey = getInput("cache-key");
+    const cacheSizeLimitMib = parseCacheSizeLimit(getInput("cache-size-limit"));
     const workdir = process.cwd();
     const { triple, ext } = getZigTarget();
     const index = await fetchIndex();
@@ -785,13 +790,16 @@ async function run() {
     if (cacheMode === "all") {
       const projectRoot = await findProjectRoot(workdir) ?? workdir;
       const buildHash = await hashBuildInputs(projectRoot);
-      await restoreCache([getZigGlobalCacheDir()], globalCacheKey(triple, resolved.version));
-      await restoreCache([getZigLocalCacheDir(projectRoot)], localCacheKey(triple, resolved.version, buildHash), localCacheRestoreKeys(triple, resolved.version));
+      const { runId, runAttempt } = getRunIdentity();
+      await restoreCache([getZigGlobalCacheDir()], globalCacheKey(triple, resolved.version, extraCacheKey, runId, runAttempt), globalCacheRestoreKeys(triple, resolved.version, extraCacheKey));
+      await restoreCache([getZigLocalCacheDir(projectRoot)], localCacheKey(triple, resolved.version, buildHash, extraCacheKey), localCacheRestoreKeys(triple, resolved.version, extraCacheKey));
       saveState("setup-zig-cache-mode", cacheMode);
       saveState("setup-zig-triple", triple);
       saveState("setup-zig-version", resolved.version);
       saveState("setup-zig-build-hash", buildHash);
       saveState("setup-zig-project-root", projectRoot);
+      saveState("setup-zig-cache-key", extraCacheKey);
+      saveState("setup-zig-cache-size-limit", String(cacheSizeLimitMib));
     }
     addPath(installDir);
     info(`Added ${installDir} to PATH`);

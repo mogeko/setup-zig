@@ -23,6 +23,26 @@ When `version` is not specified, it will try the following in order:
 |------|--------|------|
 | `version` | Auto-detect | Exact (`0.16.0`), partial (`0.16` → latest `0.16.x`), `master`, or `latest` |
 | `cache` | `binary` | `binary` only caches the toolchain; `all` additionally caches Zig global/project compilation caches; `false` disables caching |
+| `cache-key` | – | Extra component for the compile cache keys, e.g. `${{ matrix.target }}`, to keep matrix jobs in separate caches |
+| `cache-size-limit` | `2048` | Maximum size of each compile cache directory in MiB; a directory over the limit is cleared before saving. `0` disables the limit |
+
+## Caching
+
+With `cache: all`, both the Zig global cache (including the compiled build
+system that Zig 0.17 builds on first use) and the project-local `.zig-cache`
+are cached.
+
+The global cache is shared between runs and keeps growing, so it is saved under
+a per-run key and restored through a prefix. The project-local cache is keyed
+by a hash of the build inputs (`build.zig`, `build.zig.zon` and `*.zig`).
+
+The keys cover the runner OS and architecture, the resolved Zig version, the
+`cache-key` input and the workflow run. They deliberately do not include CPU
+model, target or build flags: Zig's cache is content-addressed and its internal
+hashes already cover the resolved target (including CPU features), optimize
+mode, linker inputs and so on, so entries can never be reused incorrectly.
+Passing those dimensions through `cache-key` only splits the cache into
+smaller, less reusable pieces.
 
 ## Output
 
